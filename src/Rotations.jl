@@ -6,7 +6,7 @@ module Rotations
 using FixedSizeArrays
 using Quaternions  # TODO: Switch to the UnitQuaternions package? https://github.com/kam3k/UnitQuaternions.jl
 
-import Base: convert, mean, eltype, isnan, length, call, getindex, inv, .*, tuple
+import Base: convert, mean, eltype, isnan, length, call, getindex, inv, .*, tuple, vec
 import Quaternions.Quaternion
 
 include("rotation_types.jl")
@@ -29,10 +29,11 @@ export
         RotMatrix,
         SpQuat,
         AngleAxis,
+        RodriguesVec,
         EulerAngles,         # order is in the type specification
         ProperEulerAngles,   # order is in the type specification
 
-        # quaternions as well
+        # Quaternions as well
         Quaternion,
 
         # We use Vec for points so export it from fixed size arrays
@@ -48,6 +49,7 @@ export
         valid_rotation,
 
         # extra quaternion operations
-        rot_angle  # N.B. angle(Quaternions) is different and defined in Quaternions
+        rotation_angle,  # N.B. now depricated in favour of angle
+        rotation_axis
 
 end # end rotations

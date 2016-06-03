@@ -15,7 +15,7 @@ abstract EulerOrder     # Defines the order of rotations
 """
 An abstract type for EulerAngles and ProperEulerAngles
 """
-abstract AbstractEulerAngles{ORDER <: EulerOrder, T <: Real}     # An abstract type for Euler parameterizations
+abstract AbstractEulerAngles{ORDER <: EulerOrder, T}     # An abstract type for Euler parameterizations
 
 
 
@@ -191,7 +191,7 @@ Fields:
     theta_y   - Angle to rotate about the y axis (radians)
     theta_z   - Angle to rotate about the z axis (radians)
 """
-immutable EulerAngles{Order <: TaitByranOrder, T <: Real} <: AbstractEulerAngles{Order, T}
+immutable EulerAngles{Order <: TaitByranOrder, T} <: AbstractEulerAngles{Order, T}
     theta_x::T
     theta_y::T
     theta_z::T
@@ -213,7 +213,7 @@ Fields:
     theta_2   - angle to rotate about the second axis in the order (radians)
     theta_3   - angle to rotate about the final axis in the order (radians)
 """
-immutable ProperEulerAngles{Order <: ProperEulerOrder, T <: Real} <: AbstractEulerAngles{Order, T}
+immutable ProperEulerAngles{Order <: ProperEulerOrder, T} <: AbstractEulerAngles{Order, T}
     theta_1::T
     theta_2::T
     theta_3::T

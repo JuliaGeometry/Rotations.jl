@@ -1,10 +1,12 @@
 # function to perform tests of the rotation functions in the Rotations module
-using Base.Test
 using FixedSizeArrays
 using Quaternions
 using Rotations
 
-verbose_rot_test = false
+
+########################
+# Define helper methods
+########################
 
 import Rotations: numel
 numel{T <: Rotations.RotationTypes}(X::T) = Rotations.numel(Rotations.strip_eltype(T))
@@ -62,7 +64,10 @@ macro contents_approx_eq_notype(a, b)
 end
 
 
-# build a full list of rotation types including the different ordering schemas
+#####################################################################################
+# build a full list of rotation types including the different angle ordering schemas
+#####################################################################################
+
 rot_types = Vector{Any}(0)
 for rT in Rotations.RotTypeList
     if (length(rT.parameters) == 2)
@@ -79,161 +84,202 @@ for rT in Rotations.RotTypeList
 end
 
 
-#########################################################################
-# Check fixed relationships
-#########################################################################
-
-# Do no rotation
-R = eye(RotMatrix{Float64})
-verbose_rot_test ? println("********************************\nIndentity checks\n********************************\n") : nothing
-for rT in rot_types
-    verbose_rot_test ? println(rT) : nothing
-    rot_var = rT(R)
-    null_var = eye(rT)
-    @types_approx_eq(rot_var, null_var)
-end
 
 
 
+###############################
+# Start testing
+###############################
 
-#########################################################################
-# Check conversion to and from mutable and immutable vectors,
-# as well as element conversions
-#########################################################################
+@testset "Rotations Tests" begin
 
+    ###############################
+    # Check fixed relationships
+    ###############################
 
-verbose_rot_test ? println("\n\n\n********************************\nVector conversion checks\n********************************\n") :  nothing
-R = RotMatrix(eye(3))
-eltypes = subtypes(AbstractFloat)  # test different AbstractFloats
-for rT in rot_types
-
-    verbose_rot_test ? println("$(rT)") : nothing
-    rot_var = rT(R)
-
-    # export to mutable
-    mvu = Vector(rot_var)
-    @contents_approx_eq(rot_var, mvu)
-
-    # import from mutable
-    rot_mvu = rT(mvu)
-    @types_approx_eq(rot_var, rot_mvu)
-
-    # export to immutable
-    ivu = Vec(rot_var)
-    @contents_approx_eq(rot_var, ivu)
-
-    # import from immutable
-    rot_ivu = rT(ivu)
-    @types_approx_eq(rot_var, rot_ivu)
-
-    # test typed stuff
-    for eT in eltypes
-
-        verbose_rot_test ? println("$(rT): $(eT)") : nothing
-
-        # export to mutable
-        mvt = Vector{eT}(rot_var)
-        mvc = convert(Vector{eT}, mvu)
-        @types_approx_eq(mvt, mvc)
-
-        # import from mutable
-        rot_mvt = rT(mvt)
-        @contents_approx_eq_notype(rot_var, rot_mvt)
-
-        # export to immutable
-        ivt = Vec{numel(rT), eT}(rot_var)
-        ivc = convert(Vec{numel(rT), eT}, ivt)
-        @types_approx_eq(ivt, ivc)
-
-        # import from immutable
-        rot_ivt = rT(ivt)
-        @contents_approx_eq_notype(rot_var, rot_ivt)
-
-
-        # and test the element conversion on the rotation parameterization directly
-        if (length(rT.parameters) == 1) || (TypeVar != typeof(rT.parameters[end-1]))
-            rot_c = convert(rT{eT}, rot_var)
-            @contents_approx_eq(rot_c, rot_mvt)
+    # Do no rotation
+    @testset "Identity rotation checks" begin
+        I = eye(RotMatrix{Float64})
+        @testset "$(rT)" for rT in rot_types
+            rot_var = rT(I)
+            null_var = eye(rT)
+            @types_approx_eq(rot_var, null_var)
         end
     end
-end
 
-#########################################################################
-# Check that Quaternions can import a point
-#########################################################################
-
-verbose_rot_test ? println("********************************\nQuaternion point import checks\n********************************\n") : nothing
-@types_approx_eq(Quaternion([1.0,2.0,3.0]), Quaternion(0.0, 1.0, 2.0, 3.0))
-@types_approx_eq(Quaternion(Vec(1.0,2.0,3.0)), Quaternion(0.0, 1.0, 2.0, 3.0))
-
-
-#########################################################################
-# Test conversions between rotation types
-#########################################################################
-
-verbose_rot_test ? println("\n\n\n********************************\nRotation conversion checks\n********************************\n") : nothing
-
-# test random round trip conversions
-repeats = 1000
-thresh = 1e-6
-eye3 = @fsa([1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0])
-srand(0)
-for rT_in in rot_types
-
-    for rT_out in rot_types
-
-        verbose_rot_test ? println("$(rT_in) - > $(rT_out)") : nothing
-
-        # and each test
-        #fcount = 0
-        for i = 1:repeats
-
-            # start with a random quaternion
-            q = nquatrand()
-            X = convert(rT_in, q)
-
-            # round trip conversion
-            Xd = convert(rT_in, convert(rT_out, X))
-
-            # compare rotations before and after the round trip
-            Rout = RotMatrix(X) * RotMatrix(Xd)'  # should be the identity
-            rd = vecnorm(eye3 - Rout)
-            @test rd <= thresh
-            #fcount += (rd > thresh)
+    # convert Int -> Float on construction
+    @testset "Testing integer construction (should convert to Float64)" begin
+        @testset "$(rT)" for rT in setdiff(rot_types, [RotMatrix])
+            rot_var1 = rT(zeros(Int, Rotations.numel(rT))...)
+            rot_var2 = rT(zeros(Rotations.numel(rT))...)
+            @types_approx_eq(rot_var1, rot_var2)
         end
-        #if (fcount > 0)
-        #    warn("Failed $(fcount) / $(repeats): $(rT_in) - > $(rT_out)")
-        #end
     end
-end
 
 
+    ################################
+    # check on the inverse function
+    ################################
 
-#########################################################################
-# Actually rotate some stuff
-#########################################################################
+    @testset "Testing inverse()" begin
+        repeats, thresh = 100, 1e-6
+        I = eye(RotMatrix{Float64})
+        @testset "$(rT)" for rT in [AngleAxis, Quaternion, SpQuat, RodriguesVec]
+            srand(0)
+            for i = 1:repeats
+                X = rT(nquatrand())
+                Rout = RotMatrix(X) * RotMatrix(inv(X))
+                rd = vecnorm(I - Rout)
+                @test rd <= thresh
+            end
+        end
+    end
 
-verbose_rot_test ? println("\n\n\n********************************\nTesting Rotations\n********************************\n") : nothing
 
-# a random rotation
-repeats = 1000
-srand(0)
+    #########################################################################
+    # Rotate some stuff
+    #########################################################################
 
-# rotate using each different parameterization
-for rT in rot_types
+    # a random rotation
+    @testset "Rotation Points" begin
+        repeats = 1000
+        @testset "$(rT)" for rT in rot_types
+            srand(0)
+            for i = 1:repeats
+                Rm = RotMatrix(nquatrand())
+                X = Vec{3, Float64}(randn(), randn(), randn())  # a point to rotate
+                Xo = Rm * X  # Fixed size arrays better get this right
 
-    verbose_rot_test ? println("Rotating using the $(rT) parameterization") : nothing
+                R = rT(Rm)  # convert R to this formulation
+                Xo_t = rotate(R, X)
+                @types_approx_eq_eps(Xo_t, Xo, 1e-10)
+            end
+        end
+    end
 
-    for i = 1:repeats
 
-        Rm = RotMatrix(nquatrand())
-        X = Vec{3, Float64}(randn(), randn(), randn())  # a point to rotate
-        Xo = Rm * X  # Fixed size arrays better get this right
+    #########################################################################
+    # Test conversions between rotation types
+    #########################################################################
 
-        R = rT(Rm)  # convert R to this formulation
-        Xo_t = rotate(R, X)
-        @types_approx_eq_eps(Xo_t, Xo, 1e-10)
+    # test random round trip conversions
+    @testset "Rotation parameterization conversion checks" begin
+        repeats, thresh = 100, 1e-6
+        I = eye(RotMatrix{Float64})
+        for rT_in in rot_types
+            srand(0)
+            @testset "$(rT_in) -> $(rT_out)" for rT_out in rot_types
+                for i = 1:repeats                               # and each test
 
+                    # start with a random quaternion
+                    q = nquatrand()
+                    X = convert(rT_in, q)
+
+                    # round trip conversion
+                    Xd = convert(rT_in, convert(rT_out, X))
+
+                    # compare rotations before and after the round trip
+                    Rout = RotMatrix(X) * RotMatrix(Xd)'  # should be the identity
+                    rd = vecnorm(I - Rout)
+                    @test rd <= thresh
+                end
+            end
+        end
+    end
+
+
+    #########################################################################
+    # Check that Quaternions can import a 3 vector correctly
+    #########################################################################
+
+    @testset "Quaternion 3 vector import checks" begin
+        @types_approx_eq(Quaternion([1.0,2.0,3.0]), Quaternion(0.0, 1.0, 2.0, 3.0))
+        @types_approx_eq(Quaternion(Vec(1.0,2.0,3.0)), Quaternion(0.0, 1.0, 2.0, 3.0))
+    end
+
+
+    #########################################################################
+    # Check angle and axis and inv work as expected
+    #########################################################################
+
+    @testset "Testing angle / axis extraction" begin
+        theta_v, avec = linspace(-2*pi, 2*pi, 17), Vec(1.0, 0.0, 0.0)
+        thresh = 1e-9
+        @testset "$(rT)" for rT in [AngleAxis, RodriguesVec, Quaternion, SpQuat]
+            for theta in theta_v
+                aa = AngleAxis(theta, avec...)
+                rot_var = rT(aa)
+                theta_ex, avec_ex = rotation_angle(rot_var), rotation_axis(rot_var)
+
+                # N.B. its OK of the axis is reversed and theta = 2*pi - theta
+                dp = dot(avec_ex, avec)
+                # @test_approx_eq_eps abs(dp)  1 thresh
+                if (dp > 0)
+                   @test abs(Rotations.wrap_angle(theta_ex - theta)) <= thresh
+                else
+                   @test abs(Rotations.wrap_angle((2*pi - theta_ex) - theta)) <= thresh
+                end
+            end
+        end
+    end
+
+    #########################################################################
+    # Check conversion to and from mutable and immutable vectors,
+    # as well as element conversions
+    #########################################################################
+
+    @testset "Vector import / export tests" begin
+        eltypes = subtypes(AbstractFloat)  # test different AbstractFloats
+        @testset "$(rT)" for rT in rot_types
+
+            # create one
+            rot_var = eye(rT)
+
+            # export to mutable
+            mvu = vec(rot_var)
+            @contents_approx_eq(rot_var, mvu)
+
+            # import from mutable
+            rot_mvu = rT(mvu)
+            @types_approx_eq(rot_var, rot_mvu)
+
+            # export to immutable
+            ivu = Vec(rot_var)
+            @contents_approx_eq(rot_var, ivu)
+
+            # import from immutable
+            rot_ivu = rT(ivu)
+            @types_approx_eq(rot_var, rot_ivu)
+
+            # test typed stuff
+            order_param = (length(rT.parameters) > 1) && (TypeVar == typeof(rT.parameters[end-1]))  # doe it have a missing order template parameter?
+            @testset "$(order_param ? rT{rT.parameters[1], eT} : rT{eT})" for eT in [Float32]#eltypes
+
+                # export to mutable
+                mvt = Vector{eT}(rot_var)
+                mvc = convert(Vector{eT}, mvu)
+                @types_approx_eq(mvt, mvc)
+
+                # import from mutable
+                rot_mvt = rT(mvt)
+                @contents_approx_eq_notype(rot_var, rot_mvt)
+
+                # export to immutable
+                ivt = Vec{numel(rT), eT}(rot_var)
+                ivc = convert(Vec{numel(rT), eT}, ivt)
+                @types_approx_eq(ivt, ivc)
+
+                # import from immutable
+                rot_ivt = rT(ivt)
+                @contents_approx_eq_notype(rot_var, rot_ivt)
+
+                # and test the element conversion on the rotation parameterization directly
+                if (!order_param)
+                    rot_c = convert(rT{eT}, rot_var)
+                    @contents_approx_eq(rot_c, rot_mvt)
+                end
+            end
+        end
     end
 end
 

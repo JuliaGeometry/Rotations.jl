@@ -5,29 +5,33 @@ import Base: convert
 # a sgn function
 @inline sgn{T}(x::T) = copysign(T(1), x)  #hmm, x = -0.0
 
+"""
+wraps theta into the range (-pi, pi]
+"""
+@inline wrap_angle(theta::Real) = theta + floor((pi-theta) / (2*pi)) * 2*pi # (-pi, pi]
+
 
 #
 # Add all of the transformations from one parameterization to another
 #
 function build_transform_paths()
 
-    # build transformations from one typoe to another
-    for rT in keys(trans_dict)          # rT is the type to transform from
-        if trans_dict[rT] != nothing
-            for oT in keys(trans_dict)  # oT is the type to transform to
-                if (oT != rT) && (oT != trans_dict[rT]) && (rT != trans_dict[oT])
-                    qb = quote
-                        @inline convert{T <: $(oT)}(::Type{T}, X::$(rT)) = convert(T, convert($(trans_dict[rT]), X))  # go via trans_dict[rT]
-                    end
-                    #println(qb)
-                    eval(qb)
+    # build transformations from one type to another
+    for rT in keys(conversion_path)          # rT is the type to transform from
+        for oT in keys(conversion_path)  # oT is the type to transform to
+            if (oT != rT) && !any(def_conv -> (def_conv[1] == rT) && (def_conv[2] == oT), defined_conversions)
+                inter_conv = conversion_path[rT] == nothing ? conversion_path[oT] : conversion_path[rT]
+                qb = quote
+                    @inline convert{T <: $(oT)}(::Type{T}, X::$(rT)) = convert(T, convert($(inter_conv), X))  # go via trans_dict[rT]
                 end
+                #println(qb)
+                eval(qb)
             end
         end
     end
 
     # make sure RotMatrix has call mapped to convert for rotation types
-    for rT in keys(trans_dict)
+    for rT in keys(conversion_path)
         if rT != RotMatrix
             qb = quote
                 @inline call{T <: RotMatrix}(::Type{T}, X::$(rT)) = convert(T, X)
@@ -44,7 +48,7 @@ build_transform_paths()
 #######################################
 
 #=
-function quat_to_rot(q::Quaternion)  # version assumes q is normalized
+function quat_to_rot(q::Quaternion)  # this version assumes q is normalized
 
     # get rotation matrix from quaternion
     xx = q.v1 * q.v1
@@ -76,19 +80,19 @@ function quat_to_rot(q::Quaternion)
     yy = (q.v2 * q.v2)
     zz = (q.v3 * q.v3)
 
-    m = sqrt(ww + xx + yy + zz) # norm
+    mi = 1/sqrt(ww + xx + yy + zz) # norm
 
     # get rotation matrix from quaternion
-    ww /= m
-    xx /= m
-    yy /= m
-    zz /= m
-    xy = (q.v1 * q.v2) / m
-    zw = (q.s  * q.v3) / m
-    xz = (q.v1 * q.v3) / m
-    yw = (q.v2 * q.s)  / m
-    yz = (q.v2 * q.v3) / m
-    xw = (q.s  * q.v1) / m
+    ww *= mi
+    xx *= mi
+    yy *= mi
+    zz *= mi
+    xy = (q.v1 * q.v2) * mi
+    zw = (q.s  * q.v3) * mi
+    xz = (q.v1 * q.v3) * mi
+    yw = (q.v2 * q.s)  * mi
+    yz = (q.v2 * q.v3) * mi
+    xw = (q.s  * q.v1) * mi
 
     # initialize rotation part
     return @fsa([ww + xx - yy - zz    2 * (xy - zw)       2 * (xz + yw);
@@ -161,9 +165,9 @@ function quat_to_spquat(q::Quaternion)
 
     # N.B. there's a singularity at q = [-1.0,0,0,0] - avoid it
     # alpha2 = (q.s > -.99999999) ? (1 - q.s) / (1 + q.s) : 0.0
-    q *= sgn(q.s)  # this way will keep the 2norm of the output spquat <= 1, I think they're better behaved in this range.  Also avoids the singularity
-    alpha2 = (1 - q.s) / (1 + q.s)
-    spq = SpQuat(q.v1 * (alpha2 + 1)/2,  q.v2 * (alpha2 + 1)/2, q.v3 * (alpha2 + 1)/2)
+    s = sgn(q.s)  # this way will keep the 2norm of the output spquat <= 1, I think they're better behaved in this range.  Also avoids the singularity
+    alpha2 = (1 - s * q.s) / (1 + s * q.s)
+    spq = SpQuat(s * q.v1 * (alpha2 + 1)/2,  s * q.v2 * (alpha2 + 1)/2, s * q.v3 * (alpha2 + 1)/2)
 end
 
 """
@@ -184,7 +188,7 @@ function to convert a the stereographic projection of a unit quaternion back int
 """
 function spquat_to_quat(spq::SpQuat)
     alpha2 = sum(spq.x .* spq.x + spq.y .* spq.y + spq.z .* spq.z)
-    q = Quaternion((1.0-alpha2) / (alpha2 + 1), 2*spq.x   / (alpha2 + 1),   2*spq.y  / (alpha2 + 1), 2*spq.z / (alpha2 + 1), true)
+    q = Quaternion((1-alpha2) / (alpha2 + 1), 2*spq.x   / (alpha2 + 1),   2*spq.y  / (alpha2 + 1), 2*spq.z / (alpha2 + 1), true)
     q *= sgn(q.s)
     return q
 end
@@ -229,31 +233,55 @@ end
 function to convert an arbitrary axis rotation to a quaternion
 """
 function angleaxis_to_quat(ar::AngleAxis)
-
-    qtheta = cos(ar.theta / 2.0)
-
-    # scale the axis to make the quaternion normalized
-    s =  sqrt((1.0 - qtheta*qtheta) / sum(ar.axis_x * ar.axis_x + ar.axis_y * ar.axis_y + ar.axis_z * ar.axis_z))
-
-    #keep q[1] > 0
-    qsign = sgn(qtheta)
-    s *= qsign
-    return Quaternion(qsign * qtheta, s * ar.axis_x, s * ar.axis_y, s * ar.axis_z)
-
+    qtheta = cos(ar.theta / 2)
+    s = sin(ar.theta / 2) / sqrt(sum(ar.axis_x * ar.axis_x + ar.axis_y * ar.axis_y + ar.axis_z * ar.axis_z))
+    return Quaternion(qtheta, s * ar.axis_x, s * ar.axis_y, s * ar.axis_z)
 end
 
 """
-function to convert an a quaternion to an arbitrary axis rotation
+function to convert a quaternion to an arbitrary axis rotation
 """
-function quat_to_angleaxis(q::Quaternion)
-    theta = rot_angle(q)
-    s = sqrt(q.v1*q.v1 + q.v2*q.v2 + q.v3*q.v3)
-    hasnorm = s > 1e-12
-    return hasnorm ? AngleAxis(theta, q.v1 / s, q.v2 / s, q.v3 / s) : AngleAxis(theta, 1.0, 0.0, 0.0)
+function quat_to_angleaxis{T}(q::Quaternion{T})
+    theta = 2*acos(q.s)
+    s = sqrt(q.v1*q.v1 + q.v2*q.v2 + q.v3*q.v3)  # = sin(theta/2) hopefully
+    return s > eps(T) ? AngleAxis(theta, q.v1 / s, q.v2 / s, q.v3 / s) : AngleAxis(theta, 1.0, 0.0, 0.0)
 end
 
+"""
+function to convert a rodrigues vector to an angle axis representation
+"""
+function rodrigues_to_angleaxis{T}(rv::RodriguesVec{T})
+    theta = rotation_angle(rv)
+    return theta > eps(T) ? AngleAxis(theta, rv.sx / theta, rv.sy / theta, rv.sz / theta) : AngleAxis(zero(theta), one(theta), zero(theta), zero(theta)) # TODO: make this autodiff proof
+end
 
+"""
+function to convert a rodrigues vector to a quaternion
+"""
+function rodrigues_to_quat{T}(rv::RodriguesVec{T})
+    theta = norm(rv)
+    qtheta = cos(theta / 2)
+    s = abs(1/2 * sinc((theta / 2) / pi))
+    return Quaternion(qtheta, s * rv.sx, s * rv.sy, s * rv.sz)
+end
 
+"""
+function to convert a a quaternion to a rodrigues vector
+"""
+function quat_to_rodrigues{T}(q::Quaternion{T})                         # TODO: make this autodiff proof
+    theta = rotation_angle(q)
+    st = sin(theta / 2)
+    s = abs(st) <= eps(T) ? 1 : theta / st                              # why isn't cosinc a thing?
+    return RodriguesVec(s * q.v1, s * q.v2, s * q.v3 )
+end
+
+"""
+function to convert an angle axis format to a rodrigues vector
+"""
+function angleaxis_to_rodrigues(aa::AngleAxis)
+    s = aa.theta / sqrt(aa.axis_x * aa.axis_x + aa.axis_y * aa.axis_y + aa.axis_z * aa.axis_z)
+    return RodriguesVec(s * aa.axis_x, s * aa.axis_y, s * aa.axis_z)
+end
 
 """
 Function to test if R is a valid rotation matrix.  This checks I - R * R'

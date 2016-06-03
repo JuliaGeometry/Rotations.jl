@@ -7,12 +7,6 @@
 
 
 """
-    Equivilent arbitrary axis rotation angle for a quaternion
-"""
-rot_angle(q::Quaternion) = 2 * acos(Quaternions.normalize(q).s)
-
-
-"""
 function to find the mean of a set of quaternians
 
 Args:

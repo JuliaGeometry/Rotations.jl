@@ -1,16 +1,21 @@
-import Base: convert, call, getindex, *, eltype, eye
+import Base: convert, call, getindex, *, eltype, eye, norm, inv
+import Quaternions: axis, angle
+
+@deprecate(rot_angle, rotation_angle)
+
+# defines common methods for the various rotation types
+RotTypeList = Vector{Type}(0)
+
+# build a dictionary to build transformation paths from one representation to the next
+# I hate this but trying to make a generic overload for convert causes no end of problems...
+conversion_path = Dict()
+defined_conversions = Vector{NTuple{2,Type}}(0)  # use this to keep track of all conversions that have been defined (fill in the blanks later)
 
 
 numel{T}(::Type{T}) = length(fieldnames(T))  # for getting the number of elements in the representation
                                              # e.g. length(Quaternion) == 1                # its a number
                                              # e.g. length(fieldnames(Quaternion)) == 5    # it has a normalized field
                                              # e.g. numel(Quaternion) == 4                 # what we want
-
-
-# build a dictionary to build transformation paths from one representation to the next
-# I hate this but trying to make a generic overload for convert causes no end of problems...
-trans_dict = Dict()
-
 
 ###################################################
 # Rotation matrix (typeofalias of Mat{3,3,Float64})
@@ -21,11 +26,14 @@ trans_dict = Dict()
 """
 A type alias for rotation matrices (alias of Mat{3,3,T})
 """
-typealias RotMatrix{eT <: Real}   Mat{3,3,eT}
+typealias RotMatrix{eT}   Mat{3,3,eT}
+
+# add to the type list
+push!(RotTypeList, RotMatrix)
 
 # Fixes for FixedSizeArray stuff (based on version 0.1.0)
-@inline call{T}(::Type{RotMatrix}, mat::RotMatrix{T}) = RotMatrix{T}(mat)          # weird result otherwise
-@inline convert{T}(::Type{RotMatrix}, mat::Matrix{T}) = RotMatrix{T}(mat)          # this hangs othewise
+@inline call{T}(::Type{RotMatrix}, mat::RotMatrix{T}) = mat          # weird result otherwise
+@inline convert{T}(::Type{RotMatrix}, mat::Matrix{T}) = mat          # this hangs othewise
 @inline call{T}(::Type{RotMatrix}, mat::Matrix{T}) = convert(RotMatrix{T}, mat)    # this hangs othewise
 
 @inline call{T}(::Type{RotMatrix}, xt::NTuple{9,T}) = RotMatrix{T}(xt[1:3], xt[4:6], xt[7:9])
@@ -37,9 +45,7 @@ typealias RotMatrix{eT <: Real}   Mat{3,3,eT}
 @inline call{T}(::Type{RotMatrix{T}}, x1::Real, x2::Real, x3::Real, x4::Real, x5::Real, x6::Real, x7::Real, x8::Real, x9::Real) =
                     RotMatrix{T}((T(x1),T(x2),T(x3)), (T(x4),T(x5),T(x6)), (T(x7),T(x8),T(x9)))
 
-
-trans_dict[RotMatrix] = nothing  # the blessed type, everything goes through RotMatrixs
-
+conversion_path[RotMatrix] = nothing  # the blessed type, everything goes through RotMatrixs by default
 
 # number of numeric elements
 numel(::Type{RotMatrix}) = 9
@@ -56,6 +62,9 @@ strip_eltype{T <: RotMatrix}(::Type{T}) = RotMatrix
 # (Quaternions are defined in Quaternions.jl)
 ###################################################
 
+# add to the type list
+push!(RotTypeList, Quaternion)
+
 # an extra constructor so we don't need to specify whether its normalized
 @inline call{T}(::Type{Quaternion{T}}, a::Real, b::Real, c::Real, d::Real) = Quaternion(T(a), T(b), T(c), T(d))
 
@@ -68,7 +77,8 @@ strip_eltype{T <: RotMatrix}(::Type{T}) = RotMatrix
 
 # go from a Quaternion to any other representation via the Rotation Matrix
 # @inline convert{T}(::Type{T}, q::Quaternion) = convert(T, quat_to_rot(q))  # go via the rotation representation
-trans_dict[Quaternion] = RotMatrix
+conversion_path[Quaternion] = RotMatrix
+append!(defined_conversions, [(Quaternion, RotMatrix), (RotMatrix, Quaternion)])
 
 # define its interaction with other angle representations
 @inline eltype{T}(::Type{Quaternion{T}}) = T
@@ -77,6 +87,13 @@ trans_dict[Quaternion] = RotMatrix
 # Quaternions have an extra bool field that type_methods.jl doesn't want to know about
 numel(::Type{Quaternion}) = 4
 @inline getindex(X::Quaternion, i::Integer) = X.(i)
+
+# angle and axis functions
+@inline rotation_angle(q::Quaternion) = 2 * acos(q.s)
+@inline function rotation_axis(q::Quaternion)
+    aa = AngleAxis(q)
+    Vec(aa.axis_x, aa.axis_y, aa.axis_z)
+end
 
 strip_eltype{T <: Quaternion}(::Type{T}) = Quaternion
 
@@ -107,13 +124,17 @@ See:
             uses the solution with ||SpQuat|| <= 1
 
 """
-immutable SpQuat{T <: Real}
+immutable SpQuat{T}
     x::T
     y::T
     z::T
 end
 
+# add to the type list
+push!(RotTypeList, SpQuat)
+
 # enable mixed element construction...
+@inline call{T <: Real}(::Type{SpQuat}, x1::T, x2::T, x3::T) = SpQuat{T}(promote(x1,x2,x3)...)
 @inline call(::Type{SpQuat}, x1::Real, x2::Real, x3::Real) = SpQuat(promote(x1,x2,x3)...)
 
 @inline getindex(X::SpQuat, i::Integer) = X.(i)
@@ -129,12 +150,10 @@ end
 @inline convert(::Type{SpQuat}, q::Quaternion) = quat_to_spquat(q)
 @inline convert{T}(::Type{SpQuat{T}}, q::Quaternion) = convert(SpQuat{T}, quat_to_spquat(q))
 
-# get here from a rotation matrix
-@inline convert{T <: SpQuat}(::Type{T}, R::RotMatrix) = convert(T, rot_to_quat(R))
-
 # go from a SpQuat to any other representation via Quaternions
 # @inline convert{T}(::Type{T}, spq::SpQuat) = convert(T, spquat_to_quat(spq))
-trans_dict[SpQuat] = Quaternion
+conversion_path[SpQuat] = Quaternion
+append!(defined_conversions, [(Quaternion, SpQuat), (SpQuat, Quaternion)])
 
 # define an inverse for the SPQuat since its trivial.  Inverse in the sense of the corresponding inverse rotation
 @inline inv(X::SpQuat) = SpQuat(-X.x, -X.y, -X.z)
@@ -142,8 +161,12 @@ trans_dict[SpQuat] = Quaternion
 # define multiplication for SpQuat corresponding to combining rotations
 @inline *(lhs::SpQuat, rhs::SpQuat) = SpQuat(Quaternion(lhs) * Quaternion(rhs))
 
-# pull the rotation angle as well
-@inline rot_angle(X::SpQuat) = rot_angle(Quaternion(X))
+# rotation properties
+@inline rotation_angle(X::SpQuat) = rotation_angle(Quaternion(X))
+@inline function rotation_axis(spq::SpQuat)
+    s = sqrt(sum(spq.x .* spq.x + spq.y .* spq.y + spq.z .* spq.z))
+    Vec(spq.x / s, spq.y / s, spq.z / s)
+end
 
 # element type is handy
 @inline eltype{T}(::Type{SpQuat{T}}) = T
@@ -161,16 +184,23 @@ strip_eltype{T <: SpQuat}(::Type{T}) = SpQuat
 # (limited support for now)
 ###################################################
 
-
-immutable AngleAxis{T <: Real}
+"""
+Rotation by theta about an arbitrary axis [axis_x, axis_y, axis_z]
+"""
+immutable AngleAxis{T}
     theta::T
     axis_x::T
     axis_y::T
     axis_z::T
 end
+
+# add to the type list
+push!(RotTypeList, AngleAxis)
+
 @inline getindex(X::AngleAxis, i::Integer) = X.(i)
 
 # enable mixed element construction...
+@inline call{T <: Real}(::Type{AngleAxis}, x1::T, x2::T, x3::T, x4::T) = AngleAxis{T}(promote(x1,x2,x3,x4)...)
 @inline call(::Type{AngleAxis}, x1::Real, x2::Real, x3::Real, x4::Real) = AngleAxis(promote(x1,x2,x3,x4)...)
 
 @inline convert{T <: Real}(::Type{AngleAxis{T}}, aa::AngleAxis{T}) = aa
@@ -183,16 +213,16 @@ end
 @inline convert(::Type{AngleAxis}, q::Quaternion) = quat_to_angleaxis(q)
 @inline convert{T}(::Type{AngleAxis{T}}, q::Quaternion) = convert(AngleAxis{T}, quat_to_angleaxis(q))
 
-# get here from a rotation matrix
-@inline convert{T <: AngleAxis}(::Type{T}, R::RotMatrix) = convert(T, rot_to_quat(R))
+@inline inv(aa::AngleAxis) = AngleAxis(-aa.theta, aa.axis_x, aa.axis_y, aa.axis_z)
 
 # go from an AngleAxis to any other representation via Quaternions
 # @inline convert{T}(::Type{T}, aa::AngleAxis) = convert(T, angleaxis_to_quat(spq))
-trans_dict[AngleAxis] = Quaternion
+conversion_path[AngleAxis] = Quaternion
+append!(defined_conversions, [(Quaternion, AngleAxis), (AngleAxis, Quaternion)])
 
 # accessors
-@inline rot_angle(aa::AngleAxis) = aa.theta - floor((aa.theta+pi) / (2*pi)) * 2*pi  # named to match the quaternion equivilent
-@inline axis(aa::AngleAxis) = Vec(aa.axis_x, aa.axis_y, aa.axis_z)
+@inline rotation_angle(aa::AngleAxis) = aa.theta #  - floor((aa.theta+pi) / (2*pi)) * 2*pi
+@inline rotation_axis(aa::AngleAxis) = Vec(aa.axis_x, aa.axis_y, aa.axis_z)
 
 # element type is handy
 @inline eltype{T}(::Type{AngleAxis{T}}) = T
@@ -200,9 +230,74 @@ trans_dict[AngleAxis] = Quaternion
 
 strip_eltype{T <: AngleAxis}(::Type{T}) = AngleAxis
 
+
 # define null rotations for convenience
 @inline eye(::Type{AngleAxis}) = AngleAxis(0.0, 1.0, 0.0, 0.0)
 @inline eye{T}(::Type{AngleAxis{T}}) = AngleAxis{T}(T(0), T(1), T(0), T(0))
+
+
+###################################################
+# Rodrigues Vector theta *axis
+# Don't trust autodiff on these!
+###################################################
+
+"""
+Rodrigues vector parameterization (stored as theta * axis)
+"""
+immutable RodriguesVec{T}
+    sx::T
+    sy::T
+    sz::T
+end
+
+# add to the type list
+push!(RotTypeList, RodriguesVec)
+
+@inline getindex(X::RodriguesVec, i::Integer) = X.(i)
+
+# enable mixed element construction...
+@inline call{T <: Real}(::Type{RodriguesVec}, x1::T, x2::T, x3::T) = RodriguesVec{T}(promote(x1,x2,x3)...)
+@inline call(::Type{RodriguesVec}, x1::Real, x2::Real, x3::Real) = RodriguesVec(promote(x1,x2,x3)...)
+
+@inline convert{T <: Real}(::Type{RodriguesVec{T}}, rv::RodriguesVec{T}) = rv
+@inline convert{T <: Real}(::Type{RodriguesVec{T}}, rv::RodriguesVec) = RodriguesVec{T}(T(rv.sx), T(rv.sy), T(rv.sz))
+
+# define its interaction with other angle representations
+@inline convert(::Type{Quaternion}, rv::RodriguesVec) = rodrigues_to_quat(rv)
+@inline convert{T}(::Type{Quaternion{T}}, rv::RodriguesVec) = convert(Quaternion{T}, rodrigues_to_quat(rv))
+@inline convert(::Type{AngleAxis}, rv::RodriguesVec) = rodrigues_to_angleaxis(rv)
+@inline convert{T}(::Type{AngleAxis{T}}, rv::RodriguesVec) = convert(AngleAxis{T}, rodrigues_to_angleaxis(rv))
+
+@inline convert(::Type{RodriguesVec}, q::Quaternion) = quat_to_rodrigues(q)
+@inline convert{T}(::Type{RodriguesVec{T}}, q::Quaternion) = convert(RodriguesVec{T}, quat_to_rodrigues(q))
+@inline convert(::Type{RodriguesVec}, aa::AngleAxis) = angleaxis_to_rodrigues(aa)
+@inline convert{T}(::Type{RodriguesVec{T}}, aa::AngleAxis) = convert(RodriguesVec{T}, angleaxis_to_rodrigues(aa))
+
+# get here from a rotation matrix
+@inline inv(rv::RodriguesVec) = RodriguesVec(-rv.sx, -rv.sy, -rv.sz)
+
+# go from an RodriguesVec to any other representation via Quaternions
+conversion_path[RodriguesVec] = Quaternion
+append!(defined_conversions, [(Quaternion, RodriguesVec), (RodriguesVec, Quaternion)])
+append!(defined_conversions, [(AngleAxis, RodriguesVec), (RodriguesVec, AngleAxis)])
+
+# rotation properties
+@inline norm(rv::RodriguesVec) = sqrt(rv.sx * rv.sx + rv.sy * rv.sy + rv.sz * rv.sz) # norm is meaningful for these things
+@inline rotation_angle(rv::RodriguesVec) = norm(rv)
+function rotation_axis{T}(rv::RodriguesVec{T})     # what should this return for theta = 0?
+    theta = rotation_angle(rv)
+    return (theta > eps(T) ? Vec(rv.sx / theta, rv.sy / theta, rv.sz / theta) : Vec(one(theta), zero(theta), zero(theta)))
+end
+
+# element type is handy
+@inline eltype{T}(::Type{RodriguesVec{T}}) = T
+@inline eltype{T}(::RodriguesVec{T}) = T
+
+strip_eltype{T <: RodriguesVec}(::Type{T}) = RodriguesVec
+
+# define null rotations for convenience
+@inline eye(::Type{RodriguesVec}) = RodriguesVec(0.0, 0.0, 0.0)
+@inline eye{T}(::Type{RodriguesVec{T}}) = RodriguesVec{T}(T(0), T(0), T(0))
 
 
 ###################################################
@@ -213,6 +308,9 @@ strip_eltype{T <: AngleAxis}(::Type{T}) = AngleAxis
 # EulerAngles       - for tait bryan ordering
 # ProperEulerAngles - for proper Euler ordering
 include("euler_types.jl")
+
+# add to the type list
+append!(RotTypeList, [EulerAngles, ProperEulerAngles])
 
 #
 # Euler Angles
@@ -236,7 +334,8 @@ include("euler_types.jl")
 
 # go from a EulerAngles to any other representation via a rotation matrix
 # @inline convert{T}(::Type{T}, ea::EulerAngles) = convert(T, euler_to_rot(ea))
-trans_dict[EulerAngles] = RotMatrix
+conversion_path[EulerAngles] = RotMatrix
+append!(defined_conversions, [(RotMatrix, EulerAngles), (EulerAngles, RotMatrix)])
 
 # element type is handy
 @inline eltype{ORD,T}(::Type{EulerAngles{ORD,T}}) = T
@@ -260,10 +359,6 @@ trans_dict[EulerAngles] = RotMatrix
 strip_eltype{T <: EulerAngles}(::Type{T}) = EulerAngles{euler_order(T)}
 
 
-
-
-
-
 #
 # Proper Euler Angles
 #
@@ -285,7 +380,8 @@ strip_eltype{T <: EulerAngles}(::Type{T}) = EulerAngles{euler_order(T)}
 
 # go from a ProperEulerAngles to any other representation via a rotation matrix
 # @inline convert{T}(::Type{T}, ea::ProperEulerAngles) = convert(T, euler_to_rot(ea))
-trans_dict[ProperEulerAngles] = RotMatrix
+conversion_path[ProperEulerAngles] = RotMatrix
+append!(defined_conversions, [(RotMatrix, ProperEulerAngles), (ProperEulerAngles, RotMatrix)])
 
 # element type is handy
 @inline eltype{ORD,T}(::Type{ProperEulerAngles{ORD,T}}) = T

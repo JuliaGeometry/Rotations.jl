@@ -1,11 +1,10 @@
-# defines common methods for the various rotation types
-RotTypeList    = [RotMatrix, Quaternion, SpQuat, EulerAngles, ProperEulerAngles, AngleAxis]
-RotationTypes  = Union{[RotMatrix, Quaternion, SpQuat, EulerAngles, ProperEulerAngles, AngleAxis]...}
+# create a union for all of the types
+RotationTypes  = Union{RotTypeList...}
 
-# build expression for tuples of the parameterizations data
+# build expression for tuples of the parameterization's data
 function expr_gen(typed, fields)
-    expr = :(())  # build an expression for a tuple
-    acc = typed ? typed_acc : untyped_acc
+    expr = :(())                            # build an expression for a tuple
+    acc = typed ? typed_acc : untyped_acc   # accessor method
     append!(expr.args, [acc(field) for field in fields])
     return expr
 end
@@ -14,7 +13,7 @@ typed_acc(i) = isa(i, Int) ? :(T(X[$(i)])) : :(T(X.$(i)))
 
 
 #
-# Define special import rules for Quaternions because we want to enable 3 Vectors to be promoted to Quaternions
+# Define special import rules for Quaternions because we want to enable 3 vectors and 4 vectors to be promoted to Quaternions
 #
 @inline convert{T <: Quaternion, U <: Real}(::Type{T}, X::Vector{U}) =
         (length(X) == 3) ? Quaternion(zero(U), X[1], X[2], X[3], false) : Quaternion(X[1], X[2], X[3], X[4], false)  # allow 3 Vec -> Quat
@@ -52,7 +51,8 @@ function add_methods(rot_type)
     qn = quote
 
         # convert to a mutable vector
-        @inline convert(::Type{Vector}, X::$(rot_type)) = vcat($(untyped_field_expr.args...))
+        @inline vec(X::$(rot_type)) = vcat($(untyped_field_expr.args...))
+        @inline convert(::Type{Vector}, X::$(rot_type)) = vec(X)
         @inline convert{T <: Real}(::Type{Vector{T}}, X::$(rot_type)) = vcat($(typed_field_expr.args...))
         @inline call{T <: Vector}(::Type{T}, X::$(rot_type)) = convert(T, X)
 
@@ -101,6 +101,12 @@ function add_methods(rot_type)
                     call(::Type{$(rot_type)}, $(int_cons1...)) = call($(rot_type), $(int_cons2...))
                 )
     push!(qb.args, int_expr)
+    if (rot_type in [EulerAngles, ProperEulerAngles])
+        int_expr = :(
+                    call{ORDER}(::Type{$(rot_type){ORDER}}, $(int_cons1...)) = call($(rot_type){ORDER}, $(int_cons2...))
+                    )
+        push!(qb.args, int_expr)
+    end
 
     return qb
 end
