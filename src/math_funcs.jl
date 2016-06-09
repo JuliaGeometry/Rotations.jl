@@ -94,7 +94,7 @@ function add_maths(rot_type)
     #
     # Build operations on themselves
     #
-    for op in type_ops[1:1]
+    for op in type_ops
 
         # build the rhs epxression
         exprs = [Expr(:call, :($(op)), :(X1.$(field)), :(X2.$(field))) for field in fields[1:numel(rot_type)]]
