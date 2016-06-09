@@ -1,4 +1,4 @@
-import Base: convert, call, getindex, *, eltype, eye, norm, inv
+import Base: convert, getindex, *, eltype, eye, norm, inv
 import Quaternions: axis, angle
 
 @deprecate(rot_angle, rotation_angle)
@@ -26,23 +26,23 @@ numel{T}(::Type{T}) = length(fieldnames(T))  # for getting the number of element
 """
 A type alias for rotation matrices (alias of Mat{3,3,T})
 """
-typealias RotMatrix{eT}   Mat{3,3,eT}
+typealias RotMatrix{T}   Mat{3,3,T}
 
 # add to the type list
 push!(RotTypeList, RotMatrix)
 
 # Fixes for FixedSizeArray stuff (based on version 0.1.0)
-@inline call{T}(::Type{RotMatrix}, mat::RotMatrix{T}) = mat          # weird result otherwise
+@compat @inline (::Type{RotMatrix}){T}(mat::RotMatrix{T}) = mat    # weird result otherwise
 @inline convert{T}(::Type{RotMatrix}, mat::Matrix{T}) = mat          # this hangs othewise
-@inline call{T}(::Type{RotMatrix}, mat::Matrix{T}) = convert(RotMatrix{T}, mat)    # this hangs othewise
+@compat @inline (::Type{RotMatrix}){T}(mat::Matrix{T}) = convert(RotMatrix{T}, mat)    # this hangs othewise
 
-@inline call{T}(::Type{RotMatrix}, xt::NTuple{9,T}) = RotMatrix{T}(xt[1:3], xt[4:6], xt[7:9])
+@compat @inline (::Type{RotMatrix}){T}(xt::NTuple{9,T}) = RotMatrix{T}(xt[1:3], xt[4:6], xt[7:9])
 
-@inline call{T}(::Type{RotMatrix}, c1::NTuple{3,T}, c2::NTuple{3,T}, c3::NTuple{3,T}) = RotMatrix{T}(c1, c2, c3)
-@inline call{T1,T2,T3}(::Type{RotMatrix}, c1::NTuple{3,T1}, c2::NTuple{3,T2}, c3::NTuple{3,T3}) = RotMatrix{promote_type(T1,T2,T3)}(c1, c2, c3)
+@compat @inline (::Type{RotMatrix}){T}(c1::NTuple{3,T}, c2::NTuple{3,T}, c3::NTuple{3,T}) = RotMatrix{T}(c1, c2, c3)
+@compat @inline (::Type{RotMatrix}){T1,T2,T3}(c1::NTuple{3,T1}, c2::NTuple{3,T2}, c3::NTuple{3,T3}) = RotMatrix{promote_type(T1,T2,T3)}(c1, c2, c3)
 
-@inline call{T}(::Type{RotMatrix}, x1::T, x2::T, x3::T, x4::T, x5::T, x6::T, x7::T, x8::T, x9::T) = RotMatrix{T}((x1,x2,x3), (x4,x5,x6), (x7,x8,x9))
-@inline call{T}(::Type{RotMatrix{T}}, x1::Real, x2::Real, x3::Real, x4::Real, x5::Real, x6::Real, x7::Real, x8::Real, x9::Real) =
+@compat @inline (::Type{RotMatrix}){T}(x1::T, x2::T, x3::T, x4::T, x5::T, x6::T, x7::T, x8::T, x9::T) = RotMatrix{T}((x1,x2,x3), (x4,x5,x6), (x7,x8,x9))
+@compat @inline (::Type{RotMatrix{T}}){T}(x1::Real, x2::Real, x3::Real, x4::Real, x5::Real, x6::Real, x7::Real, x8::Real, x9::Real) =
                     RotMatrix{T}((T(x1),T(x2),T(x3)), (T(x4),T(x5),T(x6)), (T(x7),T(x8),T(x9)))
 
 conversion_path[RotMatrix] = nothing  # the blessed type, everything goes through RotMatrixs by default
@@ -66,7 +66,7 @@ strip_eltype{T <: RotMatrix}(::Type{T}) = RotMatrix
 push!(RotTypeList, Quaternion)
 
 # an extra constructor so we don't need to specify whether its normalized
-@inline call{T}(::Type{Quaternion{T}}, a::Real, b::Real, c::Real, d::Real) = Quaternion(T(a), T(b), T(c), T(d))
+@compat @inline (::Type{Quaternion{T}}){T}(a::Real, b::Real, c::Real, d::Real) = Quaternion(T(a), T(b), T(c), T(d))
 
 # define its interaction with RotMatrixs
 @inline convert(::Type{RotMatrix}, q::Quaternion) = quat_to_rot(q)
@@ -86,7 +86,7 @@ append!(defined_conversions, [(Quaternion, RotMatrix), (RotMatrix, Quaternion)])
 
 # Quaternions have an extra bool field that type_methods.jl doesn't want to know about
 numel(::Type{Quaternion}) = 4
-@inline getindex(X::Quaternion, i::Integer) = X.(i)
+@inline getindex(X::Quaternion, i::Integer) = getfield(X, i)
 
 # angle and axis functions
 @inline rotation_angle(q::Quaternion) = 2 * acos(q.s)
@@ -134,10 +134,10 @@ end
 push!(RotTypeList, SpQuat)
 
 # enable mixed element construction...
-@inline call{T <: Real}(::Type{SpQuat}, x1::T, x2::T, x3::T) = SpQuat{T}(promote(x1,x2,x3)...)
-@inline call(::Type{SpQuat}, x1::Real, x2::Real, x3::Real) = SpQuat(promote(x1,x2,x3)...)
+@compat @inline (::Type{SpQuat}){T <: Real}(x1::T, x2::T, x3::T) = SpQuat{T}(promote(x1,x2,x3)...)
+@compat @inline (::Type{SpQuat})(x1::Real, x2::Real, x3::Real) = SpQuat(promote(x1,x2,x3)...)
 
-@inline getindex(X::SpQuat, i::Integer) = X.(i)
+@inline getindex(X::SpQuat, i::Integer) = getfield(X, i)
 
 # element conversions
 @inline convert{T <: Real}(::Type{SpQuat{T}}, spq::SpQuat{T}) = spq
@@ -197,11 +197,11 @@ end
 # add to the type list
 push!(RotTypeList, AngleAxis)
 
-@inline getindex(X::AngleAxis, i::Integer) = X.(i)
+@inline getindex(X::AngleAxis, i::Integer) = getfield(X, i)
 
 # enable mixed element construction...
-@inline call{T <: Real}(::Type{AngleAxis}, x1::T, x2::T, x3::T, x4::T) = AngleAxis{T}(promote(x1,x2,x3,x4)...)
-@inline call(::Type{AngleAxis}, x1::Real, x2::Real, x3::Real, x4::Real) = AngleAxis(promote(x1,x2,x3,x4)...)
+@compat @inline (::Type{AngleAxis}){T <: Real}(x1::T, x2::T, x3::T, x4::T) = AngleAxis{T}(promote(x1,x2,x3,x4)...)
+@compat @inline (::Type{AngleAxis})(x1::Real, x2::Real, x3::Real, x4::Real) = AngleAxis(promote(x1,x2,x3,x4)...)
 
 @inline convert{T <: Real}(::Type{AngleAxis{T}}, aa::AngleAxis{T}) = aa
 @inline convert{T <: Real}(::Type{AngleAxis{T}}, aa::AngleAxis) = AngleAxis{T}(T(aa.theta), T(aa.axis_x), T(aa.axis_y), T(aa.axis_z))
@@ -253,11 +253,11 @@ end
 # add to the type list
 push!(RotTypeList, RodriguesVec)
 
-@inline getindex(X::RodriguesVec, i::Integer) = X.(i)
+@inline getindex(X::RodriguesVec, i::Integer) = getfield(X, i)
 
 # enable mixed element construction...
-@inline call{T <: Real}(::Type{RodriguesVec}, x1::T, x2::T, x3::T) = RodriguesVec{T}(promote(x1,x2,x3)...)
-@inline call(::Type{RodriguesVec}, x1::Real, x2::Real, x3::Real) = RodriguesVec(promote(x1,x2,x3)...)
+@compat @inline (::Type{RodriguesVec}){T <: Real}(x1::T, x2::T, x3::T) = RodriguesVec{T}(promote(x1,x2,x3)...)
+@compat @inline (::Type{RodriguesVec})(x1::Real, x2::Real, x3::Real) = RodriguesVec(promote(x1,x2,x3)...)
 
 @inline convert{T <: Real}(::Type{RodriguesVec{T}}, rv::RodriguesVec{T}) = rv
 @inline convert{T <: Real}(::Type{RodriguesVec{T}}, rv::RodriguesVec) = RodriguesVec{T}(T(rv.sx), T(rv.sy), T(rv.sz))
@@ -317,7 +317,7 @@ append!(RotTypeList, [EulerAngles, ProperEulerAngles])
 #
 @inline convert(::Type{EulerAngles}, x::Real, y::Real, z::Real) = EulerAngles{DefaultEulerOrder()}(x,y,z)
 
-@inline getindex(X::EulerAngles, i::Integer) = X.(i)
+@inline getindex(X::EulerAngles, i::Integer) = getfield(X, i)
 
 @inline convert(::Type{EulerAngles}, ea::EulerAngles) = ea
 @inline convert{ORD <: TaitByranOrder,T <: Real}(::Type{EulerAngles{ORD}}, ea::EulerAngles{ORD,T}) = ea
@@ -348,9 +348,9 @@ append!(defined_conversions, [(RotMatrix, EulerAngles), (EulerAngles, RotMatrix)
 @inline euler_order{ORD,T}(::EulerAngles{ORD,T}) = ORD
 
 # need special constructors to fill in the template parametera
-@inline call(::Type{EulerAngles}, x::Real, y::Real, z::Real) = EulerAngles{DefaultEulerOrder()}(promote(x, y, z)...)
-@inline call{ORD, T <: Real}(::Type{EulerAngles{ORD}}, x::T, y::T, z::T) = EulerAngles{ORD,T}(x, y, z)
-@inline call{ORD}(::Type{EulerAngles{ORD}}, x::Real, y::Real, z::Real) = EulerAngles{ORD}(promote(x, y, z)...)
+@compat @inline (::Type{EulerAngles})(x::Real, y::Real, z::Real) = EulerAngles{DefaultEulerOrder()}(promote(x, y, z)...)
+@compat @inline (::Type{EulerAngles{ORD}}){ORD, T <: Real}(x::T, y::T, z::T) = EulerAngles{ORD,T}(x, y, z)
+@compat @inline (::Type{EulerAngles{ORD}}){ORD}(x::Real, y::Real, z::Real) = EulerAngles{ORD}(promote(x, y, z)...)
 
 # convert from one order to another
 @inline convert{ORD1, ORD2, eT}(::Type{EulerAngles{ORD1}}, ea::EulerAngles{ORD2, eT}) = convert(EulerAngles{ORD1}, euler_to_rot(ea))
@@ -364,7 +364,7 @@ strip_eltype{T <: EulerAngles}(::Type{T}) = EulerAngles{euler_order(T)}
 #
 @inline convert(::Type{ProperEulerAngles}, x::Real, y::Real, z::Real) = EulerAngles{DefaultProperEulerOrder()}(x,y,z)
 
-@inline getindex(X::ProperEulerAngles, i::Integer) = X.(i)
+@inline getindex(X::ProperEulerAngles, i::Integer) = getfield(X, i)
 
 @inline convert(::Type{ProperEulerAngles}, ea::ProperEulerAngles) = ea
 @inline convert{ORD <: ProperEulerOrder,T <: Real}(::Type{ProperEulerAngles{ORD}}, ea::ProperEulerAngles{ORD,T}) = ea
@@ -394,9 +394,9 @@ append!(defined_conversions, [(RotMatrix, ProperEulerAngles), (ProperEulerAngles
 @inline euler_order{ORD,T}(::ProperEulerAngles{ORD,T}) = ORD
 
 # need special constructors to fill in the template parametera
-@inline call(::Type{ProperEulerAngles}, x::Real, y::Real, z::Real) = ProperEulerAngles{DefaultProperEulerOrder()}(promote(x, y, z)...)
-@inline call{ORD, T <: Real}(::Type{ProperEulerAngles{ORD}}, x::T, y::T, z::T) = ProperEulerAngles{ORD,T}(x, y, z)
-@inline call{ORD}(::Type{ProperEulerAngles{ORD}}, x::Real, y::Real, z::Real) = ProperEulerAngles{ORD}(promote(x, y, z)...)
+@compat @inline (::Type{ProperEulerAngles})(x::Real, y::Real, z::Real) = ProperEulerAngles{DefaultProperEulerOrder()}(promote(x, y, z)...)
+@compat @inline (::Type{ProperEulerAngles{ORD}}){ORD, T <: Real}(x::T, y::T, z::T) = ProperEulerAngles{ORD,T}(x, y, z)
+@compat @inline (::Type{ProperEulerAngles{ORD}}){ORD}(x::Real, y::Real, z::Real) = ProperEulerAngles{ORD}(promote(x, y, z)...)
 
 # convert from one order to another
 @inline convert{ORD1, ORD2, eT}(::Type{ProperEulerAngles{ORD1}}, ea::ProperEulerAngles{ORD2, eT}) = convert(ProperEulerAngles{ORD1}, euler_to_rot(ea))

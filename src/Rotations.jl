@@ -3,10 +3,11 @@ __precompile__(true)
 
 module Rotations
 
+using Compat
 using FixedSizeArrays
 using Quaternions  # TODO: Switch to the UnitQuaternions package? https://github.com/kam3k/UnitQuaternions.jl
 
-import Base: convert, mean, eltype, isnan, length, call, getindex, inv, .*, tuple, vec
+import Base: convert, mean, eltype, isnan, length, getindex, inv, .*, tuple, vec
 import Quaternions.Quaternion
 
 include("rotation_types.jl")

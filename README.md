@@ -1,6 +1,7 @@
 # Rotations.jl
 
 [![Build Status](https://travis-ci.org/FugroRoames/Rotations.jl.svg?branch=master)](https://travis-ci.org/FugroRoames/Rotations.jl)
+[![Coverage Status](https://coveralls.io/repos/timholy/Images.jl/badge.png?branch=master)](https://coveralls.io/r/timholy/Images.jl?branch=master)
 
 This package implements various 3D rotation parameterizations and defines conversions between them.
 

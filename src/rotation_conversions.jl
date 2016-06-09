@@ -34,7 +34,7 @@ function build_transform_paths()
     for rT in keys(conversion_path)
         if rT != RotMatrix
             qb = quote
-                @inline call{T <: RotMatrix}(::Type{T}, X::$(rT)) = convert(T, X)
+                @compat @inline (::Type{T}){T <: RotMatrix}(X::$(rT)) = convert(T, X)
             end
             eval(qb)
         end
