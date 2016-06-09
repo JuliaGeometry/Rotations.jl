@@ -59,8 +59,8 @@ function add_maths(rot_type)
 
 
         # build the rhs epxression
-        exprs1 = [Expr(:($(op)), :(s), :(X.$(field))) for field in fields[1:numel(rot_type)]]
-        exprs2 = [Expr(:($(op)), :(X.$(field)), :(s)) for field in fields[1:numel(rot_type)]]
+        exprs1 = [Expr(:call, :($(op)), :(s), :(X.$(field))) for field in fields[1:numel(rot_type)]]
+        exprs2 = [Expr(:call, :($(op)), :(X.$(field)), :(s)) for field in fields[1:numel(rot_type)]]
 
         # form the whole expression
         qn = quote
@@ -72,14 +72,15 @@ function add_maths(rot_type)
     end
 
 
+
     #
     # Build operations with vectors
     #
     for op in vector_ops
 
         # build the rhs epxression
-        exprs1 = [Expr(:($(op)), :(s[$(i)]), :(X.$(fields[i]))) for i in 1:numel(rot_type)]
-        exprs2 = [Expr(:($(op)), :(X.$(fields[i])), :(s[$(i)])) for i in 1:numel(rot_type)]
+        exprs1 = [Expr(:call, :($(op)), :(s[$(i)]), :(X.$(fields[i]))) for i in 1:numel(rot_type)]
+        exprs2 = [Expr(:call, :($(op)), :(X.$(fields[i])), :(s[$(i)])) for i in 1:numel(rot_type)]
 
         # form the whole expression
         qn = quote
@@ -93,10 +94,10 @@ function add_maths(rot_type)
     #
     # Build operations on themselves
     #
-    for op in type_ops
+    for op in type_ops[1:1]
 
         # build the rhs epxression
-        exprs = [Expr(:($(op)), :(X1.$(field)), :(X2.$(field))) for field in fields[1:numel(rot_type)]]
+        exprs = [Expr(:call, :($(op)), :(X1.$(field)), :(X2.$(field))) for field in fields[1:numel(rot_type)]]
 
         # form the whole expression
         qn = quote
@@ -108,6 +109,7 @@ function add_maths(rot_type)
         append!(qb.args, qn.args)
 
     end
+
 
     return qb
 end

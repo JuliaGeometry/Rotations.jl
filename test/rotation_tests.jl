@@ -1,4 +1,5 @@
 # function to perform tests of the rotation functions in the Rotations module
+using Compat
 using FixedSizeArrays
 using Quaternions
 using Rotations
@@ -73,7 +74,7 @@ for rT in Rotations.RotTypeList
     if (length(rT.parameters) == 2)
 
         # get the super type for the order parameter
-        order_type = super(Rotations.euler_order(rT))
+        @compat order_type = supertype(Rotations.euler_order(rT))
         for order in subtypes(order_type)
             push!(rot_types, rT{order})
         end
