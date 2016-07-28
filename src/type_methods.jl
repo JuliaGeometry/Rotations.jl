@@ -53,8 +53,12 @@ function add_methods(rot_type)
         # convert to a mutable vector
         @inline vec(X::$(rot_type)) = vcat($(untyped_field_expr.args...))
         @inline convert(::Type{Vector}, X::$(rot_type)) = vec(X)
-        @inline convert{T}(::Type{Vector{T}}, X::$(rot_type)) = vcat($(typed_field_expr.args...))
-        @compat @inline (::Type{T}){T <: Vector}(X::$(rot_type)) = convert(T, X)
+
+        if $(rot_type) <: AbstractEulerAngles
+            @compat @inline (::Type{Vector{T}}){T, Order}(X::$(rot_type){Order}) = vec(convert($(rot_type){Order, T}, X))
+        else
+            @compat @inline (::Type{Vector{T}}){T}(X::$(rot_type)) = vec(convert($(rot_type){T}, X))
+        end
 
         # convert from a mutable vector
         if ($(rot_type) != Quaternion)  # Quaternions has this defined already

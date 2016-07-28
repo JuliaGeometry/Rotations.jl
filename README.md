@@ -71,7 +71,9 @@ This package implements various 3D rotation parameterizations and defines conver
 
 5. **Quaternions** `Quaternion{T}`
 
-    A 4 element immutable array containing the quaternion representation of the rotation.  This uses the [Quaternions](https://github.com/JuliaGeometry/Quaternions.jl) package. Note that a quaternion representing a rotation should be a unit quaternion
+    A 4 element immutable array containing the quaternion representation of the rotation.  This uses the [Quaternions](https://github.com/JuliaGeometry/Quaternions.jl) package.
+
+    A non-unit quaternion ```q``` is treated as a scaled unit quaternion, ```q = s * qhat```, so that ```RotMatrix(q) == s * RotMatrix(qhat)```
 
 
 6. **Rodrigues Vector** `RodriguesVec{T}`
@@ -108,6 +110,27 @@ All parameterizations can be converted to and from mutable / immutable vectors, 
 
 ```
 
+### Derivatives
+
+Some derivative calculations are include in this package, e.g.
+
+```julia
+    q = Quaternion(1.0,0,0,0)
+
+    # 1st order only for conversion to a rotation matrix
+    jac = Rotations.jacobian(RotMatrix, q)
+
+    # 1st and 2nd order for Quaternion <-> SpQuat
+    jac = Rotations.jacobian(SpQuat, q)
+    hess = Rotations.hessian(SpQuat, q)
+
+    # 1st and 2nd order for rotating points using Quaternions and SpQuats
+    using FixedSizeArrays
+    X = randn(Vec{3,Float64})
+    jac = Rotations.jacobian(q, X)
+    hess = Rotations.hessian(q, X)
+```
+
 ### Notes
 
 This package assumes [active (right handed) rotations](https://en.wikipedia.org/wiki/Active_and_passive_transformation) where applicable.
@@ -117,7 +140,7 @@ This package assumes [active (right handed) rotations](https://en.wikipedia.org/
 
 They're faster (BLAS isn't great for 3x3 matrices) and don't need preallocating.  A benchmark case is included:
 
-```
+```julia
     cd(Pkg.dir("Rotations") * "/test")
     include("benchmark.jl")
     BenchMarkRotations.benchmark_mutable()

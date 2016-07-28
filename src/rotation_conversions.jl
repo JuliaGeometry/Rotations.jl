@@ -169,6 +169,10 @@ function quat_to_spquat(q::Quaternion)
     alpha2 = (1 - s * q.s) / (1 + s * q.s)
     spq = SpQuat(s * q.v1 * (alpha2 + 1)/2,  s * q.v2 * (alpha2 + 1)/2, s * q.v3 * (alpha2 + 1)/2)
 end
+function quat_to_spquat_naive(q::Quaternion) # makes no attempt to stay away from the singularity
+    alpha2 = (1 - q.s) / (1 + q.s)
+    spq = SpQuat(q.v1 * (alpha2 + 1)/2,  q.v2 * (alpha2 + 1)/2, q.v3 * (alpha2 + 1)/2)
+end
 
 """
  a mutable version filling the 3 element buffer spq using the 4 element vector q
@@ -191,6 +195,10 @@ function spquat_to_quat(spq::SpQuat)
     q = Quaternion((1-alpha2) / (alpha2 + 1), 2*spq.x   / (alpha2 + 1),   2*spq.y  / (alpha2 + 1), 2*spq.z / (alpha2 + 1), true)
     q *= sgn(q.s)
     return q
+end
+function spquat_to_quat_naive(spq::SpQuat) # makes no attempt to stay away from the singularity
+    alpha2 = sum(spq.x .* spq.x + spq.y .* spq.y + spq.z .* spq.z)
+    q = Quaternion((1-alpha2) / (alpha2 + 1), 2*spq.x   / (alpha2 + 1),   2*spq.y  / (alpha2 + 1), 2*spq.z / (alpha2 + 1), true)
 end
 
 """
@@ -261,7 +269,7 @@ function to convert a rodrigues vector to a quaternion
 function rodrigues_to_quat{T}(rv::RodriguesVec{T})
     theta = norm(rv)
     qtheta = cos(theta / 2)
-    s = abs(1/2 * sinc((theta / 2) / pi))
+    s = 1/2 * sinc((theta / 2) / pi) # Rework - autodiff can't handle sinc
     return Quaternion(qtheta, s * rv.sx, s * rv.sy, s * rv.sz)
 end
 

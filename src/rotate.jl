@@ -16,22 +16,23 @@ Xout = rotate(R, Xin)
 @inline rotate{T1, T2}(R::RotMatrix{T1}, X::FixedVector{3,T2}) = convert(RotMatrix{promote_type(T1,T2)}, R) * convert(Vec{3, promote_type(T1,T2)}, X)
 
 # Using Quaternions to do the rotation
-function rotate(q::Quaternion, X::Vec{3})
-    # qo = (q*Quaternion(X)*conj(q))  # expand the above for speed
+function rotate(q::Quaternion, X::FixedVector{3})
+    # qo = (q*Quaternion(X)*conj(q)) / norm(q)  # expand the above for speed
+    s = norm(q)     # SpQuats wouldn't need this step
     qo = (-q.v1 * X[1] - q.v2 * X[2] - q.v3 * X[3],
           q.s   * X[1] + q.v2 * X[3] - q.v3 * X[2],
           q.s   * X[2] - q.v1 * X[3] + q.v3 * X[1],
           q.s   * X[3] + q.v1 * X[2] - q.v2 * X[1])
 
-    Xo = Vec(-qo[1] * q.v1 + qo[2] * q.s  - qo[3] * q.v3 + qo[4] * q.v2,
-             -qo[1] * q.v2 + qo[2] * q.v3 + qo[3] * q.s  - qo[4] * q.v1,
-             -qo[1] * q.v3 - qo[2] * q.v2 + qo[3] * q.v1 + qo[4] * q.s)
+    Xo = Vec((-qo[1] * q.v1 + qo[2] * q.s  - qo[3] * q.v3 + qo[4] * q.v2) / s,
+             (-qo[1] * q.v2 + qo[2] * q.v3 + qo[3] * q.s  - qo[4] * q.v1) / s,
+             (-qo[1] * q.v3 - qo[2] * q.v2 + qo[3] * q.v1 + qo[4] * q.s)  / s)
 
 end
 
 # Using Rodrigues formula on an AngleAxis parameterization (assume unit axis length) to do the rotation
 # (implementation from: https://ceres-solver.googlesource.com/ceres-solver/+/1.10.0/include/ceres/rotation.h)
-function rotate(aa::AngleAxis, X::Vec{3})
+function rotate(aa::AngleAxis, X::FixedVector{3})
     w = rotation_axis(aa)
     ct, st = cos(aa.theta), sin(aa.theta)
     w_cross_pt = cross(w, X)
@@ -43,7 +44,7 @@ function rotate(aa::AngleAxis, X::Vec{3})
 end
 
 # Rodrigues formula starting with a Rodrigues vector
-function rotate{T}(rv::RodriguesVec{T}, X::Vec{3})
+function rotate{T}(rv::RodriguesVec{T}, X::FixedVector{3})
     theta = norm(rv)
     if (theta > eps(T)) # use eps here because we have the series expansion defined
         Xo = rotate(AngleAxis(rv), X)

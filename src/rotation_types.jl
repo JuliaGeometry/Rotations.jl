@@ -89,25 +89,7 @@ numel(::Type{Quaternion}) = 4
 @inline getindex(X::Quaternion, i::Integer) = getfield(X, i)
 
 # angle and axis functions
-@inline function rotation_angle(q::Quaternion) # I think normalizing rounding errors will make things worse
-
-    # this version to get the angle of the unit quaternion q_hat for arbitrary scaled q, q = s * q_hat
-    theta =  2 * atan2(sqrt(q.v1*q.v1 + q.v2*q.v2 + q.v3*q.v3), q.s)
-
-    #= If we want it to throw a domain error for non-unit quaternions
-    if (abs(q.s) > 1)
-        thresh = 1e-9  # choosen by voodoo
-        if (q.s > 1)
-            theta = (q.s - 1 < thresh) ?  2 * acos(one(q.s)) : 2 * acos(q.s)  # 2nd case will throw
-        else
-            theta = (q.s + 1 < thresh) ?  2 * acos(-one(q.s)) : 2 * acos(q.s) # 2nd case will throw
-        end
-    else
-        theta = 2 * acos(q.s)
-    end
-    =#
-end
-
+@inline rotation_angle(q::Quaternion) =  2 * atan2(sqrt(q.v1*q.v1 + q.v2*q.v2 + q.v3*q.v3), q.s)
 @inline rotation_axis(q::Quaternion) = rotation_axis(AngleAxis(q))
 
 strip_eltype{T <: Quaternion}(::Type{T}) = Quaternion
@@ -174,6 +156,10 @@ append!(defined_conversions, [(Quaternion, SpQuat), (SpQuat, Quaternion)])
 
 # define multiplication for SpQuat corresponding to combining rotations
 @inline *(lhs::SpQuat, rhs::SpQuat) = SpQuat(Quaternion(lhs) * Quaternion(rhs))
+
+# allow multiplication with Quaternions as well (return as the left hand side argument)
+@inline *(lhs::SpQuat, rhs::Quaternion) = SpQuat(Quaternion(lhs) * rhs)
+@inline *(lhs::Quaternion, rhs::SpQuat) = lhs * Quaternion(rhs)
 
 # rotation properties
 @inline rotation_angle(spq::SpQuat) = rotation_angle(Quaternion(spq))
@@ -289,10 +275,9 @@ push!(RotTypeList, RodriguesVec)
 @inline convert(::Type{RodriguesVec}, aa::AngleAxis) = angleaxis_to_rodrigues(aa)
 @inline convert{T}(::Type{RodriguesVec{T}}, aa::AngleAxis) = convert(RodriguesVec{T}, angleaxis_to_rodrigues(aa))
 
-# get here from a rotation matrix
 @inline inv(rv::RodriguesVec) = RodriguesVec(-rv.sx, -rv.sy, -rv.sz)
 
-# go from an RodriguesVec to any other representation via Quaternions
+# go from a RodriguesVec to any other representation via Quaternions
 conversion_path[RodriguesVec] = Quaternion
 append!(defined_conversions, [(Quaternion, RodriguesVec), (RodriguesVec, Quaternion)])
 append!(defined_conversions, [(AngleAxis, RodriguesVec), (RodriguesVec, AngleAxis)])
@@ -431,4 +416,10 @@ strip_eltype{T <: ProperEulerAngles}(::Type{T}) = ProperEulerAngles{euler_order(
 @inline eye(::Type{ProperEulerAngles}) = ProperEulerAngles(0.0, 0.0, 0.0)
 @inline eye{ORD}(::Type{ProperEulerAngles{ORD}}) = ProperEulerAngles{ORD}(0.0, 0.0, 0.0)
 @inline eye{ORD, T}(::Type{ProperEulerAngles{ORD, T}}) = ProperEulerAngles{ORD, T}(zero(T), zero(T), zero(T))
+
+
+#
+# build a union for all of out rotation types
+#
+RotationTypes = Union{RotMatrix, Quaternion, SpQuat, AngleAxis, RodriguesVec, EulerAngles, ProperEulerAngles}
 

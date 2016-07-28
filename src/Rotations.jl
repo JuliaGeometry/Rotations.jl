@@ -1,11 +1,13 @@
 # we generate code in this module, so precompile where possible
-__precompile__(true)
+# __precompile__(true) # removing this until Quaternions.jl has it
 
 module Rotations
 
+import Quaternions  # TODO: Switch to the UnitQuaternions package? https://github.com/kam3k/UnitQuaternions.jl
+using Quaternions
 using Compat
 using FixedSizeArrays
-using Quaternions  # TODO: Switch to the UnitQuaternions package? https://github.com/kam3k/UnitQuaternions.jl
+
 
 import Base: convert, mean, eltype, isnan, length, getindex, inv, .*, tuple, vec
 import Quaternions.Quaternion
@@ -15,12 +17,14 @@ include("rotation_conversions.jl")
 include("euler_conversions.jl")
 include("type_methods.jl")
 include("rotate.jl")
-include("quaternion_ops.jl")
+include("quaternion_funcs.jl")
 include("math_funcs.jl")
-include("rot_covariances.jl")
-
+include("derivative.jl")
 
 export
+
+        # A union for defined rotation parameterizations
+        RotationTypes,
 
         # Euler angle ordering
         EulerOrder,

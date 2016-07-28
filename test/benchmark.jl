@@ -40,11 +40,11 @@ function benchmark_rotations(n::Int=1_000_000)
             convert(Vector{typeof(Rv[1])}, Rv)
         end
 
-        println("Rotate by $(rT) (converting to a RotMatrix)")
+        println("Convert $(rT) to a rotation matrix and rotate")
         rot_test!(Xo, Rv[1:1], X)
         @time rot_test!(Xo, Rv, X)
 
-        println("Rotate by $(rT) (implementation of rotate)")
+        println("Rotate by $(rT) using the current implementation")
         current_test!(Xo, Rv[1:1], X)
         @time current_test!(Xo, Rv, X)
         println(" ")
