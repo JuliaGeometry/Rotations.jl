@@ -33,7 +33,10 @@ export
     rotation_axis,
 
     # quaternion from two vectors
-    rotation_between
+    rotation_between,
+
+    # difference between two angles
+    angle_difference
 
     # derivatives (names clash with ForwarDiff?)
     #jacobian, hessian

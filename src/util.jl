@@ -19,3 +19,12 @@ function perpendicular_vector(vec::SVector{3})
     @inbounds perpind2 = vec[ind1]
     perp = @SVector [ifelse(i == ind1, perpind1, ifelse(i == ind2, perpind2, zero(T))) for i = 1 : 3]
 end
+
+"""
+    angle_difference(a, b)
+
+Compute the angle difference `a - b` wrapped into the interval [-π, π) by subtracting or
+adding a multiple of 2π. This is the number `c` with the smallest absolute value such
+that `a` and `b + c` represent the same point on the circle, and likewise `b` and `a - c`.
+"""
+angle_difference(a, b) = mod2pi(a - b + π) - π
