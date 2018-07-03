@@ -4,6 +4,8 @@ os:
   - linux
   - osx
 julia:
+  - 0.6
+  - 0.7
   - nightly
 addons:
   apt:
@@ -12,8 +14,8 @@ addons:
 notifications:
   email: false
 matrix:
-#  allow_failures:
-#    - julia: nightly
+  allow_failures:
+    - julia: nightly
 #     - os: osx
 # uncomment the following lines to override the default test script
 #script:
