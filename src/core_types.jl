@@ -137,12 +137,12 @@ function isrotation(r::AbstractMatrix{T}, tol::Real = 1000 * eps(eltype(T))) whe
         # Transpose is overloaded for many of our types, so we do it explicitly:
         r_trans = @SMatrix [conj(r[1,1])  conj(r[2,1]);
                             conj(r[1,2])  conj(r[2,2])]
-        d = vecnorm((r * r_trans) - eye(SMatrix{2,2}))
+        d = norm((r * r_trans) - eye(SMatrix{2,2}))
     elseif size(r) == (3,3)
         r_trans = @SMatrix [conj(r[1,1])  conj(r[2,1])  conj(r[3,1]);
                             conj(r[1,2])  conj(r[2,2])  conj(r[2,3]);
                             conj(r[1,3])  conj(r[2,3])  conj(r[3,3])]
-        d = vecnorm((r * r_trans) - eye(SMatrix{3,3}))
+        d = norm((r * r_trans) - eye(SMatrix{3,3}))
     else
         return false
     end
