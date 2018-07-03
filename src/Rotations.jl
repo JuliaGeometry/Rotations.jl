@@ -8,16 +8,12 @@ using Compat.LinearAlgebra
 using StaticArrays
 
 import Base: convert, eltype, size, length, getindex, *, Tuple
-import LinearAlgebra: inv, eye
+import Compat.LinearAlgebra: inv, eye
 
 if VERSION >= v"0.7.0-beta.85"
     import Statistics: mean
 else
     import Base: mean
-end
-
-if VERSION < v"0.7.0-alpha"
-    using Compat: norm
 end
 
 include("util.jl")
