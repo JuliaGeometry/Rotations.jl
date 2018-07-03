@@ -4,7 +4,7 @@ __precompile__(true)
 module Rotations
 
 using Compat
-using Compat.LinearAlgebra
+using Compat: LinearAlgebra, norm
 using StaticArrays
 
 import Base: convert, eltype, size, length, getindex, *, Tuple
