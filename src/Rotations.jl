@@ -1,5 +1,5 @@
 # we generate code in this module, so precompile where possible
-__precompile__(true)
+VERSION < v"0.7.0-beta2.199" && __precompile__()
 
 module Rotations
 

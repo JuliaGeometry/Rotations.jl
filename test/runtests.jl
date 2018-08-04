@@ -4,7 +4,11 @@ using Compat.LinearAlgebra
 using Rotations
 using StaticArrays
 
-import Compat.Random: srand
+if VERSION < v"0.7.0-beta2.171"
+    import Compat.Random: srand
+else
+    const srand = Compat.Random.seed!
+end
 
 # Check that there are no ambiguities beyond those present in StaticArrays
 ramb = detect_ambiguities(Rotations, Base, Core)
