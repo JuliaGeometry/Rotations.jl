@@ -37,7 +37,7 @@ function Statistics.mean(qvec::AbstractVector{Quat{T}}, method::Integer = 0) whe
             Qi = @SVector [q.w, q.x, q.y, q.z]  # convert types to ensure we don't get quaternion multiplication
             M .+= Qi * (Qi')
         end
-        vectors = eigvecs(Symmetric(M))
+        vectors = eigvecs(Symmetric(M))[:, 4]
         Qbar = Quat(vectors[1], vectors[2], vectors[3], vectors[4]) # This will renormalize the quaternion...
     #else
     #    error("I haven't coded this")
