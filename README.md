@@ -131,7 +131,7 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
 
     A composition of 3 cardinal axis rotations is typically known as a Euler
     angle parameterization of a 3D rotation. The rotations with 3 unique axes,
-    such as `RotXYZ`, are said to follow the [**Tait Byran**](https://en.wikipedia.org/wiki/Euler_angles#Tait.E2.80.93Bryan_angles) angle ordering,
+    such as `RotXYZ`, are said to follow the [**Tait Bryan**](https://en.wikipedia.org/wiki/Euler_angles#Tait.E2.80.93Bryan_angles) angle ordering,
     while those which repeat (e.g. `EulerXYX`) are said to use [**Proper Euler**](https://en.wikipedia.org/wiki/Euler_angles#Conventions) angle ordering.
 
     Like the two-angle versions, read the application of the rotations along the
