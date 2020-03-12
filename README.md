@@ -2,7 +2,7 @@
 
 *3D rotations made easy in Julia*
 
-[![Build Status](https://travis-ci.org/FugroRoames/Rotations.jl.svg?branch=static_arrays)](https://travis-ci.org/FugroRoames/Rotations.jl)
+[![Build Status](https://github.com/JuliaGeometry/Rotations.jl/workflows/CI/badge.svg)](https://github.com/JuliaGeometry/Rotations.jl/actions?query=workflow%3ACI)
 
 This package implements various 3D rotation parameterizations and defines
 conversions between them. At their heart, each rotation parameterization *is*
