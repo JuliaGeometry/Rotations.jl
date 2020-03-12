@@ -6,16 +6,16 @@
 
 This package implements various 3D rotation parameterizations and defines
 conversions between them. At their heart, each rotation parameterization *is*
-a 3×3 unitary (orthogonal) matrix (based on the [StaticArrays.jl package](https://github.com/andyferris/StaticArrays.jl)),
+a 3×3 unitary (orthogonal) matrix (based on the [StaticArrays.jl package](https://github.com/JuliaArrays/StaticArrays.jl)),
 and acts to rotate a 3-vector about the origin through matrix-vector multiplication.
 
 While the `RotMatrix` type is a dense representation of a `3×3` matrix, we also
 have sparse (or computed, rather) representations such as quaternions,
 angle-axis parameterizations, and Euler angles.
 
-For composing rotations about the origin with other transformations, see also
-the [CoordinateTransformations.jl](https://github.com/FugroRoames/CoordinateTransformations.jl)
-or [AffineTransforms.jl](https://github.com/timholy/AffineTransforms.jl) packages.
+For composing rotations about the origin with other transformations, see
+the [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl)
+package.
 
 ### Example Usage
 
@@ -77,7 +77,7 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
 1. **Rotation Matrix** `RotMatrix{N, T}`
 
     An N x N rotation matrix storing the rotation.  This is a simple wrapper for
-    a [StaticArrays](https://github.com/andyferris/StaticArrays.jl) `SMatrix{N,N,T}`.
+    a [StaticArrays](https://github.com/JuliaArrays/StaticArrays.jl) `SMatrix{N,N,T}`.
     A rotation matrix `R` should have the property `I = R * R'`, but this isn't
     enforced by the constructor. On the other hand, all the types below are
     guaranteed to be "proper" rotations for all input parameters (equivalently:
