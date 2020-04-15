@@ -65,7 +65,7 @@ end
 # build a full list of rotation types including the different angle ordering schemas
 #####################################################################################
 
-rot_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RotationVec,
+rot_types = (RotMatrix{3}, SPQuat, AngleAxis, RotationVec,
 			 UnitQuaternion, RodriguesParam, MRP,
              RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX,
              RotXYX, RotYZY, RotZXZ, RotXZX, RotYXY, RotZYZ)
@@ -73,14 +73,12 @@ rot_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RotationVec,
 one_types = (RotX, RotY, RotZ)
 two_types = (RotXY, RotYZ, RotZX, RotXZ, RotYX, RotZY)
 taitbyran_types = (RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX)
-all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RotationVec,
+all_types = (RotMatrix{3}, SPQuat, AngleAxis, RotationVec,
 			 UnitQuaternion, RodriguesParam, MRP,
              RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX,
              RotXYX, RotYZY, RotZXZ, RotXZX, RotYXY, RotZYZ,
              RotX, RotY, RotZ,
              RotXY, RotYZ, RotZX, RotXZ, RotYX, RotZY)
-
-quat_types = (Quat, UnitQuaternion)
 
 ###############################
 # Start testing
@@ -147,20 +145,21 @@ quat_types = (Quat, UnitQuaternion)
 
     @testset "Quaternion double cover" begin
         repeats = 100
-		@testset "$Q double cover" for Q in quat_types
+		@testset "Quaternion double cover" begin
+			Q = UnitQuaternion
 	        for i = 1 : repeats
-	            q = rand(Quat)
+	            q = rand(UnitQuaternion)
 
-	            q2 = Quat(-q.w, -q.x, -q.y, -q.z) # normalize: need a tolerance
+	            q2 = UnitQuaternion(-q.w, -q.x, -q.y, -q.z) # normalize: need a tolerance
 	            @test SVector(q2.w, q2.x, q2.y, q2.z) ≈ SVector(-q.w, -q.x, -q.y, -q.z) atol = 100 * eps()
 	            @test q ≈ q2 atol = 100 * eps()
 
-	            q3 = Quat(-q.w, -q.x, -q.y, -q.z, false) # don't normalize: everything is exact
+	            q3 = UnitQuaternion(-q.w, -q.x, -q.y, -q.z, false) # don't normalize: everything is exact
 	            @test (q3.w, q3.x, q3.y, q3.z) == (-q.w, -q.x, -q.y, -q.z)
 	            @test q == q3
 
 	            Δq = q \ q3
-	            @test Δq ≈ one(Quat) atol = 100 * eps()
+	            @test Δq ≈ one(UnitQuaternion) atol = 100 * eps()
 	        end
 		end
     end
@@ -202,23 +201,22 @@ quat_types = (Quat, UnitQuaternion)
     end
 
     #########################################################################
-    # Test robustness of DCM to Quat function
+    # Test robustness of DCM to UnitQuaternion function
     #########################################################################
     function nearest_orthonormal(not_orthonormal)
         u,s,v = svd(not_orthonormal)
         return u * Diagonal([1, 1, sign(det(u * transpose(v)))]) * transpose(v)
     end
 
-    @testset "DCM to Quat" begin
+    @testset "DCM to UnitQuaternion" begin
         pert = 1e-3
-		for quat in quat_types
-	        for type_rot in all_types
-	            for _ = 1:100
-	                not_orthonormal = rand(type_rot) + rand(3, 3) * pert
-	                @test norm(quat(not_orthonormal) - nearest_orthonormal(not_orthonormal)) < 10pert
-	            end
-	        end
-		end
+		quat = UnitQuaternion
+        for type_rot in all_types
+            for _ = 1:100
+                not_orthonormal = rand(type_rot) + rand(3, 3) * pert
+                @test norm(quat(not_orthonormal) - nearest_orthonormal(not_orthonormal)) < 10pert
+            end
+        end
     end
 
     #########################################################################
@@ -241,16 +239,16 @@ quat_types = (Quat, UnitQuaternion)
                 @test rotation_axis(r2) ≈ axis
             end
         end
-		@test norm(rotation_axis(Quat(1.0, 0.0, 0.0, 0.0))) ≈ 1.0
+		@test norm(rotation_axis(UnitQuaternion(1.0, 0.0, 0.0, 0.0))) ≈ 1.0
 
         # TODO RotX, RotXY?
     end
 
     #########################################################################
-    # Check construction of Quat given two vectors
+    # Check construction of UnitQuaternion given two vectors
     #########################################################################
 
-    @testset "Testing construction of Quat given two vectors" begin
+    @testset "Testing construction of UnitQuaternion given two vectors" begin
         angle_axis_test(from, to, rot, atol) = isapprox(rot * from * norm(to) / norm(from), to; atol = atol)
 
         for i = 1 : 10000
@@ -345,9 +343,9 @@ quat_types = (Quat, UnitQuaternion)
         @test norm([aa.axis_x, aa.axis_y, aa.axis_z]) ≈ norm([x, y, z])
 
         w, x, y, z = 1., 2., 3., 4.
-        quat = Quat(w, x, y, z)
+        quat = UnitQuaternion(w, x, y, z)
         @test norm([quat.w, quat.x, quat.y, quat.z]) ≈ 1.
-        quat = Quat(w, x, y, z, false)
+        quat = UnitQuaternion(w, x, y, z, false)
         @test norm([quat.w, quat.x, quat.y, quat.z]) ≈ norm([w, x, y, z])
 
         w, x, y, z = 1., 2., 3., 4.

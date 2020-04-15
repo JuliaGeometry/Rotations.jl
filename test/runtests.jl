@@ -21,5 +21,6 @@ include("unitquat.jl")
 include("rodrigues_params.jl")
 include("quatmaps.jl")
 include("rotation_error.jl")
+include("deprecated.jl")
 
 include(joinpath(@__DIR__, "..", "perf", "runbenchmarks.jl"))

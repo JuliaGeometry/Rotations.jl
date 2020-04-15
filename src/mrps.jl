@@ -170,7 +170,7 @@ end
 
 
 function ∇²differential(p2::MRP, b::AbstractVector)
-    check_length(L, 3)
+    check_length(b, 3)
     p2 = params(p2)
     n2 = p2'p2
     A = -p2  # 3x1

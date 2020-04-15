@@ -30,7 +30,7 @@ to the output parameterization, centered at the value of R.
     jacobian(R::rotation_type, X::AbstractVector)
 Returns the jacobian for rotating the vector X by R.
 """
-function jacobian(::Type{RotMatrix},  q::Quat)
+function jacobian(::Type{RotMatrix},  q::UnitQuaternion)
 
     # let q = s * qhat where qhat is a unit quaternion and  s is a scalar,
     # then R = RotMatrix(q) = RotMatrix(s * qhat) = s * RotMatrix(qhat)
@@ -78,10 +78,10 @@ end
 function jacobian(::Type{RotMatrix},  X::SPQuat)
 
     # get the derivatives of the quaternion w.r.t to the spquat
-    dQdX = jacobian(Quat,  X)
+    dQdX = jacobian(UnitQuaternion,  X)
 
     # get the derivatives of the rotation matrix w.r.t to the spquat
-    dRdQ = jacobian(RotMatrix,  Quat(X))
+    dRdQ = jacobian(RotMatrix,  UnitQuaternion(X))
 
     # and return
     return dRdQ * dQdX
@@ -94,7 +94,7 @@ end
 #
 #######################################################
 
-function jacobian(::Type{Quat},  X::SPQuat)
+function jacobian(::Type{UnitQuaternion},  X::SPQuat)
 
     # differentiating
     # q = Quaternion((1-alpha2) / (alpha2 + 1), 2*X.x / (alpha2 + 1),   2*X.y  / (alpha2 + 1), 2*X.z / (alpha2 + 1), true)
@@ -133,7 +133,7 @@ end
 #
 # Jacobian converting from a Quaternion to an SpQuat
 #
-function jacobian(::Type{SPQuat}, q::Quat{T}) where T
+function jacobian(::Type{SPQuat}, q::UnitQuaternion{T}) where T
     den = 1 + q.w
     scale = 1 / den
     dscaledQw = -(scale * scale)
@@ -174,7 +174,7 @@ end
 end
 
 # TODO: should this be jacobian(:rotate, q,  X)   # or something?
-function jacobian(q::Quat, X::AbstractVector)
+function jacobian(q::UnitQuaternion, X::AbstractVector)
     @assert length(X) === 3
     T = eltype(q)
 
@@ -195,8 +195,8 @@ function jacobian(q::Quat, X::AbstractVector)
 end
 
 function jacobian(spq::SPQuat, X::AbstractVector)
-    dQ = jacobian(Quat, spq)
-    q = Quat(spq)
+    dQ = jacobian(UnitQuaternion, spq)
+    q = UnitQuaternion(spq)
     return jacobian(q, X) * dQ
 end
 

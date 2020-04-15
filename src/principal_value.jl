@@ -6,26 +6,25 @@ particular set of numbers is better conditioned (e.g. `SPQuat`) or obeys a parti
 non-negative rotation). In order to preserve differentiability it is necessary to allow rotation representations to
 travel slightly away from the nominal domain; this is critical for applications such as optimization or dynamics.
 
-This function takes a rotation type (e.g. `Quat`, `RotXY`) and outputs a new rotation of the same type that corresponds
+This function takes a rotation type (e.g. `UnitQuaternion, `RotXY`) and outputs a new rotation of the same type that corresponds
 to the same `RotMatrix`, but that obeys certain conventions or is better conditioned. The outputs of the function have
 the following properties:
 
 - all angles are between between `-pi` to `pi` (except for `AngleAxis` which is between `0` and `pi`).
-- all `Quat` have non-negative real part
+- all `UnitQuaternion have non-negative real part
 - the components of all `SPQuat` have a norm that is at most 1.
 - the `RotationVec` rotation is at most `pi`
 
 """
 principal_value(r::RotMatrix) = r
-principal_value(q::Quat{T}) where {T} = q.w < zero(T) ? Quat{T}(-q.w, -q.x, -q.y, -q.z, false) : q
 principal_value(q::Q) where Q <: UnitQuaternion = q.w < zero(eltype(q)) ? Q(-q.w, -q.x, -q.y, -q.z, false) : q
 function principal_value(spq::SPQuat{T}) where {T}
-    # A quat with positive real part: Quat( qw,  qx,  qy,  qz)
+    # A quat with positive real part: UnitQuaternion( qw,  qx,  qy,  qz)
     #
-    # A spq corresponding to the Quat with a positive real part:
+    # A spq corresponding to the UnitQuaternion with a positive real part:
     # SPQuat( qx / (1 + qw),  qy / (1 + qw),  qz / (1 + qw)) ≡ SPQuat(spx, spy, spz)
     #
-    # A spq corresponding to the Quat with a negative real part:
+    # A spq corresponding to the UnitQuaternion with a negative real part:
     # SPQuat(-qx / (1 - qw), -qy / (1 - qw), -qz / (1 - qw)) ≡ SPQuat(snx, sny, snz)
     #
     # Claim:         spx / snx = -1 / (spx^2 + spy^2 + spz^2)

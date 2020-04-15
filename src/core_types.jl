@@ -43,7 +43,7 @@ function Base.rand(::Type{R}) where R <: Rotation{3}
         T = Float64
     end
 
-    q = Quat(randn(T), randn(T), randn(T), randn(T))
+    q = UnitQuaternion(randn(T), randn(T), randn(T), randn(T))
     return R(q)
 end
 

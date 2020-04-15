@@ -53,9 +53,9 @@ end
 UnitQuaternion(q::UnitQuaternion) = q
 
 # UnitQuaternion <=> Quat
-(::Type{Q})(q::Quat) where Q <: UnitQuaternion = Q(q.w, q.x, q.y, q.z, false)
-(::Type{Q})(q::UnitQuaternion) where Q <: Quat = Q(q.w, q.x, q.y, q.z, false)
-const AllQuats{T} = Union{<:Quat{T}, <:UnitQuaternion{T}}
+# (::Type{Q})(q::Quat) where Q <: UnitQuaternion = Q(q.w, q.x, q.y, q.z, false)
+# (::Type{Q})(q::UnitQuaternion) where Q <: Quat = Q(q.w, q.x, q.y, q.z, false)
+# const AllQuats{T} = Union{<:Quat{T}, <:UnitQuaternion{T}}
 
 
 # ~~~~~~~~~~~~~~~ StaticArrays Interface ~~~~~~~~~~~~~~~ #
@@ -323,6 +323,22 @@ end
 
 (\)(q::UnitQuaternion, r::SVector{3}) = conj(q)*r          # Equivalent to inv(q)*r
 
+"""
+    rotation_between(from, to)
+
+Compute the quaternion that rotates vector `from` so that it aligns with vector
+`to`, along the geodesic (shortest path).
+"""
+rotation_between(from::AbstractVector, to::AbstractVector) = rotation_between(SVector{3}(from), SVector{3}(to))
+function rotation_between(from::SVector{3}, to::SVector{3})
+    # Robustified version of implementation from https://www.gamedev.net/topic/429507-finding-the-quaternion-betwee-two-vectors/#entry3856228
+    normprod = sqrt(dot(from, from) * dot(to, to))
+    T = typeof(normprod)
+    normprod < eps(T) && throw(ArgumentError("Input vectors must be nonzero."))
+    w = normprod + dot(from, to)
+    v = abs(w) < 100 * eps(T) ? perpendicular_vector(from) : cross(from, to)
+    @inbounds return UnitQuaternion(w, v[1], v[2], v[3]) # relies on normalization in constructor
+end
 
 # ~~~~~~~~~~~~~~~ Kinematics ~~~~~~~~~~~~~~~ $
 """

@@ -44,8 +44,8 @@ end
 end
 
 # These functions are enough to satisfy the entire StaticArrays interface:
-@inline (::Type{AA})(t::NTuple{9}) where {AA <: AngleAxis} = AA(Quat(t)) # TODO: consider going directly from tuple (RotMatrix) to AngleAxis
-@inline Base.getindex(aa::AngleAxis, i::Int) = Quat(aa)[i]
+@inline (::Type{AA})(t::NTuple{9}) where {AA <: AngleAxis} = AA(UnitQuaternion(t)) # TODO: consider going directly from tuple (RotMatrix) to AngleAxis
+@inline Base.getindex(aa::AngleAxis, i::Int) = UnitQuaternion(aa)[i]
 
 @inline function Base.Tuple(aa::AngleAxis{T}) where T
     # Rodrigues' rotation formula.
@@ -70,12 +70,12 @@ end
         c1xz + sy, c1yz - sx, one(T) - c1x2 - c1y2)
 end
 
-@inline function (::Type{Q})(aa::AngleAxis) where Q <: AllQuats
+@inline function (::Type{Q})(aa::AngleAxis) where Q <: UnitQuaternion
     s, c = sincos(aa.theta / 2)
     return Q(c, s * aa.axis_x, s * aa.axis_y, s * aa.axis_z, false)
 end
 
-@inline function (::Type{AA})(q::AllQuats) where AA <: AngleAxis
+@inline function (::Type{AA})(q::UnitQuaternion) where AA <: AngleAxis
     s2 = q.x * q.x + q.y * q.y + q.z * q.z
     sin_t2 = sqrt(s2)
     theta = 2 * atan(sin_t2, q.w)
@@ -101,13 +101,13 @@ function Base.:*(aa::AngleAxis, v::StaticVector)
                              v[3] * ct + w_cross_pt[3] * st + w[3] * m)
 end
 
-@inline Base.:*(aa::AngleAxis, r::Rotation) = Quat(aa) * r
-@inline Base.:*(aa::AngleAxis, r::RotMatrix) = Quat(aa) * r
-@inline Base.:*(aa::AngleAxis, r::SPQuat) = Quat(aa) * r
-@inline Base.:*(r::Rotation, aa::AngleAxis) = r * Quat(aa)
-@inline Base.:*(r::RotMatrix, aa::AngleAxis) = r * Quat(aa)
-@inline Base.:*(r::SPQuat, aa::AngleAxis) = r * Quat(aa)
-@inline Base.:*(aa1::AngleAxis, aa2::AngleAxis) = Quat(aa1) * Quat(aa2)
+@inline Base.:*(aa::AngleAxis, r::Rotation) = UnitQuaternion(aa) * r
+@inline Base.:*(aa::AngleAxis, r::RotMatrix) = UnitQuaternion(aa) * r
+@inline Base.:*(aa::AngleAxis, r::SPQuat) = UnitQuaternion(aa) * r
+@inline Base.:*(r::Rotation, aa::AngleAxis) = r * UnitQuaternion(aa)
+@inline Base.:*(r::RotMatrix, aa::AngleAxis) = r * UnitQuaternion(aa)
+@inline Base.:*(r::SPQuat, aa::AngleAxis) = r * UnitQuaternion(aa)
+@inline Base.:*(aa1::AngleAxis, aa2::AngleAxis) = UnitQuaternion(aa1) * UnitQuaternion(aa2)
 
 @inline Base.inv(aa::AngleAxis) = AngleAxis(-aa.theta, aa.axis_x, aa.axis_y, aa.axis_z)
 @inline Base.:^(aa::AngleAxis, t::Real) = AngleAxis(aa.theta*t, aa.axis_x, aa.axis_y, aa.axis_z)
@@ -144,9 +144,9 @@ end
 @inline RotationVec(x::X, y::Y, z::Z) where {X,Y,Z} = RotationVec{promote_type(promote_type(X, Y), Z)}(x, y, z)
 
 # These functions are enough to satisfy the entire StaticArrays interface:
-@inline (::Type{RV})(t::NTuple{9}) where {RV <: RotationVec} = RV(Quat(t)) # TODO: go through AngleAxis once it's faster
-@inline Base.getindex(aa::RotationVec, i::Int) = Quat(aa)[i]
-@inline Base.Tuple(rv::RotationVec) = Tuple(Quat(rv))
+@inline (::Type{RV})(t::NTuple{9}) where {RV <: RotationVec} = RV(UnitQuaternion(t)) # TODO: go through AngleAxis once it's faster
+@inline Base.getindex(aa::RotationVec, i::Int) = UnitQuaternion(aa)[i]
+@inline Base.Tuple(rv::RotationVec) = Tuple(UnitQuaternion(rv))
 
 function (::Type{AA})(rv::RotationVec) where AA <: AngleAxis
     # TODO: consider how to deal with derivative near theta = 0. There should be a first-order expansion here.
@@ -158,7 +158,7 @@ function (::Type{RV})(aa::AngleAxis) where RV <: RotationVec
     return RV(aa.theta * aa.axis_x, aa.theta * aa.axis_y, aa.theta * aa.axis_z)
 end
 
-function (::Type{Q})(rv::RotationVec) where Q <: Quat
+function (::Type{Q})(rv::RotationVec) where Q <: UnitQuaternion
     theta = rotation_angle(rv)
     qtheta = cos(theta / 2)
     #s = abs(1/2 * sinc((theta / 2) / pi))
@@ -166,7 +166,7 @@ function (::Type{Q})(rv::RotationVec) where Q <: Quat
     return Q(qtheta, s * rv.sx, s * rv.sy, s * rv.sz, false)
 end
 
-(::Type{RV})(q::Quat) where {RV <: RotationVec} = RV(AngleAxis(q))
+(::Type{RV})(q::UnitQuaternion) where {RV <: RotationVec} = RV(AngleAxis(q))
 
 function Base.:*(rv::RotationVec{T1}, v::StaticVector{3, T2}) where {T1,T2}
     theta = rotation_angle(rv)
@@ -180,15 +180,15 @@ function Base.:*(rv::RotationVec{T1}, v::StaticVector{3, T2}) where {T1,T2}
     end
 end
 
-@inline Base.:*(rv::RotationVec, r::Rotation) = Quat(rv) * r
-@inline Base.:*(rv::RotationVec, r::RotMatrix) = Quat(rv) * r
-@inline Base.:*(rv::RotationVec, r::SPQuat) = Quat(rv) * r
-@inline Base.:*(rv::RotationVec, r::AngleAxis) = Quat(rv) * r
-@inline Base.:*(r::Rotation, rv::RotationVec) = r * Quat(rv)
-@inline Base.:*(r::RotMatrix, rv::RotationVec) = r * Quat(rv)
-@inline Base.:*(r::SPQuat, rv::RotationVec) = r * Quat(rv)
-@inline Base.:*(r::AngleAxis, rv::RotationVec) = r * Quat(rv)
-@inline Base.:*(rv1::RotationVec, rv2::RotationVec) = Quat(rv1) * Quat(rv2)
+@inline Base.:*(rv::RotationVec, r::Rotation) = UnitQuaternion(rv) * r
+@inline Base.:*(rv::RotationVec, r::RotMatrix) = UnitQuaternion(rv) * r
+@inline Base.:*(rv::RotationVec, r::SPQuat) = UnitQuaternion(rv) * r
+@inline Base.:*(rv::RotationVec, r::AngleAxis) = UnitQuaternion(rv) * r
+@inline Base.:*(r::Rotation, rv::RotationVec) = r * UnitQuaternion(rv)
+@inline Base.:*(r::RotMatrix, rv::RotationVec) = r * UnitQuaternion(rv)
+@inline Base.:*(r::SPQuat, rv::RotationVec) = r * UnitQuaternion(rv)
+@inline Base.:*(r::AngleAxis, rv::RotationVec) = r * UnitQuaternion(rv)
+@inline Base.:*(rv1::RotationVec, rv2::RotationVec) = UnitQuaternion(rv1) * UnitQuaternion(rv2)
 
 @inline Base.inv(rv::RotationVec) = RotationVec(-rv.sx, -rv.sy, -rv.sz)
 @inline Base.:^(rv::RotationVec, t::Real) = RotationVec(rv.sx*t, rv.sy*t, rv.sz*t)

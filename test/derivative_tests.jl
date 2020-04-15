@@ -11,13 +11,13 @@ using ForwardDiff
     @testset "Jacobian checks" begin
 
         # Quaternion to rotation matrix
-        @testset "Jacobian (Quat -> RotMatrix)" begin
+        @testset "Jacobian (UnitQuaternion -> RotMatrix)" begin
             for i = 1:10    # do some repeats
-                q = rand(Quat)  # a random quaternion
+                q = rand(UnitQuaternion)  # a random quaternion
 
                 # test jacobian to a Rotation matrix
                 R_jac = Rotations.jacobian(RotMatrix, q)
-                FD_jac = ForwardDiff.jacobian(x -> SVector{9}(Quat(x[1], x[2], x[3], x[4])),
+                FD_jac = ForwardDiff.jacobian(x -> SVector{9}(UnitQuaternion(x[1], x[2], x[3], x[4])),
                                               SVector(q.w, q.x, q.y, q.z))
 
                 # compare
@@ -25,14 +25,14 @@ using ForwardDiff
             end
         end
 
-        # SPQuat to Quat
-        @testset "Jacobian (SPQuat -> Quat)" begin
+        # SPQuat to UnitQuternion
+        @testset "Jacobian (SPQuat -> UnitQuaternion)" begin
             for i = 1:10    # do some repeats
                 spq = rand(SPQuat)  # a random SPQuat
 
                 # test jacobian to a Rotation matrix
-                R_jac = Rotations.jacobian(Quat, spq)
-                FD_jac = ForwardDiff.jacobian(x -> (q = Quat(SPQuat(x[1],x[2],x[3]));
+                R_jac = Rotations.jacobian(UnitQuaternion, spq)
+                FD_jac = ForwardDiff.jacobian(x -> (q = UnitQuaternion(SPQuat(x[1],x[2],x[3]));
                                                     SVector(q.w, q.x, q.y, q.z)),
                                               SVector(spq.x, spq.y, spq.z))
 
@@ -41,11 +41,11 @@ using ForwardDiff
             end
         end
 
-        @testset "Jacobian (SPQuat -> Quat) [Corner Cases]" begin
+        @testset "Jacobian (SPQuat -> UnitQuaternion) [Corner Cases]" begin
             for spq = [SPQuat(1.0, 0.0, 0.0), SPQuat(0.0, 1.0, 0.0), SPQuat(0.0, 0.0, 1.0)]
                 # test jacobian to a Rotation matrix
-                R_jac = Rotations.jacobian(Quat, spq)
-                FD_jac = ForwardDiff.jacobian(x -> (q = Quat(SPQuat(x[1],x[2],x[3]));
+                R_jac = Rotations.jacobian(UnitQuaternion, spq)
+                FD_jac = ForwardDiff.jacobian(x -> (q = UnitQuaternion(SPQuat(x[1],x[2],x[3]));
                                                     SVector(q.w, q.x, q.y, q.z)),
                                               SVector(spq.x, spq.y, spq.z))
 
@@ -54,14 +54,14 @@ using ForwardDiff
             end
         end
 
-        # SPQuat to Quat
-        @testset "Jacobian (Quat -> SPQuat)" begin
+        # SPQuat to UnitQuaternion
+        @testset "Jacobian (UnitQuaternion -> SPQuat)" begin
             for i = 1:10    # do some repeats
-                q = rand(Quat)  # a random Quat
+                q = rand(UnitQuaternion)  # a random UnitQuaternion
 
                 # test jacobian to a Rotation matrix
                 R_jac = Rotations.jacobian(SPQuat, q)
-                FD_jac = ForwardDiff.jacobian(x -> (spq = SPQuat(Quat(x[1], x[2], x[3], x[4]));
+                FD_jac = ForwardDiff.jacobian(x -> (spq = SPQuat(UnitQuaternion(x[1], x[2], x[3], x[4]));
                                                     SVector(spq.x, spq.y, spq.z)),
                                               SVector(q.w, q.x, q.y, q.z))
 
@@ -150,14 +150,14 @@ using ForwardDiff
         end
 
         # rotate a point by a quaternion
-        @testset "Jacobian (Quat rotation)" begin
+        @testset "Jacobian (UnitQuaternion rotation)" begin
             for i = 1:10    # do some repeats
-                q = rand(Quat)    # a random quaternion
+                q = rand(UnitQuaternion)    # a random quaternion
                 v = randn(SVector{3,Float64})
 
                 # test jacobian to a Rotation matrix
                 R_jac = Rotations.jacobian(q, v)
-                FD_jac = ForwardDiff.jacobian(x -> Quat(x[1], x[2], x[3], x[4])*v,
+                FD_jac = ForwardDiff.jacobian(x -> UnitQuaternion(x[1], x[2], x[3], x[4])*v,
                                               SVector(q.w, q.x, q.y, q.z))
 
                 # compare
