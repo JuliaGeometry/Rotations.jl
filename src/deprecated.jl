@@ -16,3 +16,12 @@ function Base.one(::Type{RodriguesVec{T}}) where T
     Base.depwarn("`one(::Type{RodriguesVec{T}})` is deprecated, use `one(::Type{RotationVec{T}})` instead.", :one)
     one(RotationVec{T})
 end
+function Base.rand(::Type{RodriguesVec})
+    Base.depwarn("`RodriguesVec` is deprecated, use `RotationVec` instead", :Type)
+    rand(RotationVec)
+end
+function Base.rand(::Type{RodriguesVec{T}}) where T
+    Base.depwarn("`RodriguesVec` is deprecated, use `RotationVec` instead", :Type)
+    rand(RotationVec{T})
+end
+
