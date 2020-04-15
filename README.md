@@ -98,9 +98,9 @@ q5 = q3 \ q2  # q5 = inv(q3) * q2
 # convert to a Stereographic quaternion projection (recommended for applications with differentiation)
 spq = SPQuat(r)
 
-# convert to the Angle-axis parameterization, or related Rodrigues vector
+# convert to the Angle-axis parameterization, or related Rotation vector
 aa = AngleAxis(r)
-rv = RodriguesVec(r)
+rv = RotationVec(r)
 ϕ = rotation_angle(r)
 v = rotation_axis(r)
 
@@ -149,7 +149,7 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
     they follow the same multiplicative *algebra* as quaternions, it is better
     to think of `Quat` as a 3×3 matrix rather than as a quaternion *number*.
 
-4. **Rodrigues Vector** `RodriguesVec{T}`
+4. **Rotation Vector** `RotationVec{T}`
 
     A 3D rotation encoded by an angle-axis representation as `angle * axis`.
     This type is used in packages such as [OpenCV](http://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#void%20Rodrigues%28InputArray%20src,%20OutputArray%20dst,%20OutputArray%20jacobian%29).
@@ -165,12 +165,12 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
     A 3D rotation encoded by the stereographic projection of a unit quaternion.  This projection can be visualized as a pin hole camera, with the pin hole matching the quaternion `[-1,0,0,0]` and the image plane containing the origin and having normal direction `[1,0,0,0]`.  The "null rotation" `Quaternion(1.0,0,0,0)` then maps to the `SPQuat(0,0,0)`
 
     These are similar to the Rodrigues vector in that the axis direction is stored in an unnormalized form, and the rotation angle is encoded in the length of the axis.  This type has the nice property that the derivatives of the rotation matrix w.r.t. the `SPQuat` parameters are rational functions, making the `SPQuat` type a good choice for differentiation / optimization.
-    
+
 6. **Rodrigues Parameters** `RodriguesParam{T}`
-    A 3-parameter representation of 3D rotations that has a singularity at 180 degrees. They can be interpreted as a projection of the unit quaternion onto the plane tangent to the quaternion identity. They are computationally efficient and do not have a sign ambiguity. 
-    
+    A 3-parameter representation of 3D rotations that has a singularity at 180 degrees. They can be interpreted as a projection of the unit quaternion onto the plane tangent to the quaternion identity. They are computationally efficient and do not have a sign ambiguity.
+
 7. **Modified Rodrigues Parameter** `MRP{T}`
-    Equivalent to `SPQuat{T}`. Are frequently used in aerospace applications since they are a 3-parameter representation whose singularity happens at 360 degrees. In practice, the singularity can be avoided with some switching logic between one of two equivalent MRPs (obtained by projecting the negated quaternion). 
+    Equivalent to `SPQuat{T}`. Are frequently used in aerospace applications since they are a 3-parameter representation whose singularity happens at 360 degrees. In practice, the singularity can be avoided with some switching logic between one of two equivalent MRPs (obtained by projecting the negated quaternion).
 
 8. **Cardinal axis rotations** `RotX{T}`, `RotY{T}`, `RotZ{T}`
 
@@ -189,10 +189,10 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
     such as `RotXYZ`, are said to follow the [**Tait Bryan**](https://en.wikipedia.org/wiki/Euler_angles#Tait.E2.80.93Bryan_angles) angle ordering,
     while those which repeat (e.g. `EulerXYX`) are said to use [**Proper Euler**](https://en.wikipedia.org/wiki/Euler_angles#Conventions) angle ordering.
 
-    Like the two-angle versions, the order of application to a vector is right-to-left, so that `RotXYZ(x, y, z) * v == RotX(x) * (RotY(y) * (RotZ(z) * v))`.  This may be interpreted as an "extrinsic" rotation about the Z, Y, and X axes or as an "intrinsic" rotation about the X, Y, and Z axes.  Similarly, `RotZYX(z, y, x)` may be interpreted as an "extrinsic" rotation about the X, Y, and Z axes or an "intrinsic" rotation about the Z, Y, and X axes. 
-    
+    Like the two-angle versions, the order of application to a vector is right-to-left, so that `RotXYZ(x, y, z) * v == RotX(x) * (RotY(y) * (RotZ(z) * v))`.  This may be interpreted as an "extrinsic" rotation about the Z, Y, and X axes or as an "intrinsic" rotation about the X, Y, and Z axes.  Similarly, `RotZYX(z, y, x)` may be interpreted as an "extrinsic" rotation about the X, Y, and Z axes or an "intrinsic" rotation about the Z, Y, and X axes.
+
 ### The Rotation Error state and Linearization
-It is often convenient to consider perturbations or errors about a particular 3D rotation, such as applications in state estimation or optimization-based control. Intuitively, we expect these errors to live in three-dimensional space. For globally non-singular parameterizations such as unit quaternions, we need a way to map between the four parameters of the quaternion to this three-dimensional plane tangent to the four-dimensional hypersphere on which quaternions live. 
+It is often convenient to consider perturbations or errors about a particular 3D rotation, such as applications in state estimation or optimization-based control. Intuitively, we expect these errors to live in three-dimensional space. For globally non-singular parameterizations such as unit quaternions, we need a way to map between the four parameters of the quaternion to this three-dimensional plane tangent to the four-dimensional hypersphere on which quaternions live.
 
 There are several of these maps provided by Rotations.jl:
 * `ExponentialMap`: A very common mapping that uses the quaternion

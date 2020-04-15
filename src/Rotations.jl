@@ -22,12 +22,13 @@ include("rodrigues_params.jl")
 include("mrps.jl")
 include("error_maps.jl")
 include("rotation_error.jl")
+include("deprecated.jl")
 
 export
     Rotation, RotMatrix, RotMatrix2, RotMatrix3,
     Angle2d,
     Quat, SPQuat, UnitQuaternion,
-    AngleAxis, RodriguesVec, RodriguesParam, MRP,
+    AngleAxis, RodriguesVec, RotationVec, RodriguesParam, MRP,
     RotX, RotY, RotZ,
     RotXY, RotYX, RotZX, RotXZ, RotYZ, RotZY,
     RotXYX, RotYXY, RotZXZ, RotXZX, RotYZY, RotZYZ,

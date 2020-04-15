@@ -9,7 +9,7 @@ const suite = BenchmarkGroup()
 Random.seed!(1)
 
 noneuler = suite["Non-Euler conversions"] = BenchmarkGroup()
-rotationtypes = [RotMatrix3{T}, Quat{T}, UnitQuaternion{T}, SPQuat{T}, MRP{T}, AngleAxis{T}, RodriguesVec{T}]
+rotationtypes = [RotMatrix3{T}, Quat{T}, UnitQuaternion{T}, SPQuat{T}, MRP{T}, AngleAxis{T}, RotationVec{T}]
 for (from, to) in product(rotationtypes, rotationtypes)
     if from != to
         name = "$(string(from)) -> $(string(to))"

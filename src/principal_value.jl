@@ -13,7 +13,7 @@ the following properties:
 - all angles are between between `-pi` to `pi` (except for `AngleAxis` which is between `0` and `pi`).
 - all `Quat` have non-negative real part
 - the components of all `SPQuat` have a norm that is at most 1.
-- the `RodriguesVec` rotation is at most `pi`
+- the `RotationVec` rotation is at most `pi`
 
 """
 principal_value(r::RotMatrix) = r
@@ -52,11 +52,11 @@ function principal_value(aa::AngleAxis{T}) where {T}
     end
 end
 
-function principal_value(rv::RodriguesVec{T}) where {T}
+function principal_value(rv::RotationVec{T}) where {T}
     theta = rotation_angle(rv)
     if pi < theta
         re_s = rem2pi(theta, RoundNearest) / theta
-        return RodriguesVec(re_s * rv.sx, re_s * rv.sy, re_s * rv.sz)
+        return RotationVec(re_s * rv.sx, re_s * rv.sy, re_s * rv.sz)
     else
         return rv
     end

@@ -126,14 +126,14 @@ end
 ################################################################################
 ################################################################################
 """
-    struct RodriguesVec{T} <: Rotation{3,T}
-    RodriguesVec(sx, sy, sz)
+    struct RotationVec{T} <: Rotation{3,T}
+    RotationVec(sx, sy, sz)
 
 Rodrigues vector parameterization of a 3×3 rotation matrix. The direction of the
 vector [sx, sy, sz] defines the axis of rotation, and the rotation angle is
 given by its norm.
 """
-struct RodriguesVec{T} <: Rotation{3,T}
+struct RotationVec{T} <: Rotation{3,T}
     sx::T
     sy::T
     sz::T
@@ -141,24 +141,24 @@ end
 
 # StaticArrays will take over *all* the constructors and put everything in a tuple...
 # but this isn't quite what we mean when we have 4 inputs (not 9).
-@inline RodriguesVec(x::X, y::Y, z::Z) where {X,Y,Z} = RodriguesVec{promote_type(promote_type(X, Y), Z)}(x, y, z)
+@inline RotationVec(x::X, y::Y, z::Z) where {X,Y,Z} = RotationVec{promote_type(promote_type(X, Y), Z)}(x, y, z)
 
 # These functions are enough to satisfy the entire StaticArrays interface:
-@inline (::Type{RV})(t::NTuple{9}) where {RV <: RodriguesVec} = RV(Quat(t)) # TODO: go through AngleAxis once it's faster
-@inline Base.getindex(aa::RodriguesVec, i::Int) = Quat(aa)[i]
-@inline Base.Tuple(rv::RodriguesVec) = Tuple(Quat(rv))
+@inline (::Type{RV})(t::NTuple{9}) where {RV <: RotationVec} = RV(Quat(t)) # TODO: go through AngleAxis once it's faster
+@inline Base.getindex(aa::RotationVec, i::Int) = Quat(aa)[i]
+@inline Base.Tuple(rv::RotationVec) = Tuple(Quat(rv))
 
-function (::Type{AA})(rv::RodriguesVec) where AA <: AngleAxis
+function (::Type{AA})(rv::RotationVec) where AA <: AngleAxis
     # TODO: consider how to deal with derivative near theta = 0. There should be a first-order expansion here.
     theta = rotation_angle(rv)
     return theta > 0 ? AA(theta, rv.sx / theta, rv.sy / theta, rv.sz / theta, false) : AA(zero(theta), one(theta), zero(theta), zero(theta), false)
 end
 
-function (::Type{RV})(aa::AngleAxis) where RV <: RodriguesVec
+function (::Type{RV})(aa::AngleAxis) where RV <: RotationVec
     return RV(aa.theta * aa.axis_x, aa.theta * aa.axis_y, aa.theta * aa.axis_z)
 end
 
-function (::Type{Q})(rv::RodriguesVec) where Q <: Quat
+function (::Type{Q})(rv::RotationVec) where Q <: Quat
     theta = rotation_angle(rv)
     qtheta = cos(theta / 2)
     #s = abs(1/2 * sinc((theta / 2) / pi))
@@ -166,9 +166,9 @@ function (::Type{Q})(rv::RodriguesVec) where Q <: Quat
     return Q(qtheta, s * rv.sx, s * rv.sy, s * rv.sz, false)
 end
 
-(::Type{RV})(q::Quat) where {RV <: RodriguesVec} = RV(AngleAxis(q))
+(::Type{RV})(q::Quat) where {RV <: RotationVec} = RV(AngleAxis(q))
 
-function Base.:*(rv::RodriguesVec{T1}, v::StaticVector{3, T2}) where {T1,T2}
+function Base.:*(rv::RotationVec{T1}, v::StaticVector{3, T2}) where {T1,T2}
     theta = rotation_angle(rv)
     if (theta > eps(T1)) # use eps here because we have the 1st order series expansion defined
         return AngleAxis(rv) * v
@@ -180,27 +180,27 @@ function Base.:*(rv::RodriguesVec{T1}, v::StaticVector{3, T2}) where {T1,T2}
     end
 end
 
-@inline Base.:*(rv::RodriguesVec, r::Rotation) = Quat(rv) * r
-@inline Base.:*(rv::RodriguesVec, r::RotMatrix) = Quat(rv) * r
-@inline Base.:*(rv::RodriguesVec, r::SPQuat) = Quat(rv) * r
-@inline Base.:*(rv::RodriguesVec, r::AngleAxis) = Quat(rv) * r
-@inline Base.:*(r::Rotation, rv::RodriguesVec) = r * Quat(rv)
-@inline Base.:*(r::RotMatrix, rv::RodriguesVec) = r * Quat(rv)
-@inline Base.:*(r::SPQuat, rv::RodriguesVec) = r * Quat(rv)
-@inline Base.:*(r::AngleAxis, rv::RodriguesVec) = r * Quat(rv)
-@inline Base.:*(rv1::RodriguesVec, rv2::RodriguesVec) = Quat(rv1) * Quat(rv2)
+@inline Base.:*(rv::RotationVec, r::Rotation) = Quat(rv) * r
+@inline Base.:*(rv::RotationVec, r::RotMatrix) = Quat(rv) * r
+@inline Base.:*(rv::RotationVec, r::SPQuat) = Quat(rv) * r
+@inline Base.:*(rv::RotationVec, r::AngleAxis) = Quat(rv) * r
+@inline Base.:*(r::Rotation, rv::RotationVec) = r * Quat(rv)
+@inline Base.:*(r::RotMatrix, rv::RotationVec) = r * Quat(rv)
+@inline Base.:*(r::SPQuat, rv::RotationVec) = r * Quat(rv)
+@inline Base.:*(r::AngleAxis, rv::RotationVec) = r * Quat(rv)
+@inline Base.:*(rv1::RotationVec, rv2::RotationVec) = Quat(rv1) * Quat(rv2)
 
-@inline Base.inv(rv::RodriguesVec) = RodriguesVec(-rv.sx, -rv.sy, -rv.sz)
-@inline Base.:^(rv::RodriguesVec, t::Real) = RodriguesVec(rv.sx*t, rv.sy*t, rv.sz*t)
-@inline Base.:^(rv::RodriguesVec, t::Integer) = RodriguesVec(rv.sx*t, rv.sy*t, rv.sz*t) # to avoid ambiguity
+@inline Base.inv(rv::RotationVec) = RotationVec(-rv.sx, -rv.sy, -rv.sz)
+@inline Base.:^(rv::RotationVec, t::Real) = RotationVec(rv.sx*t, rv.sy*t, rv.sz*t)
+@inline Base.:^(rv::RotationVec, t::Integer) = RotationVec(rv.sx*t, rv.sy*t, rv.sz*t) # to avoid ambiguity
 
 # rotation properties
-@inline rotation_angle(rv::RodriguesVec) = sqrt(rv.sx * rv.sx + rv.sy * rv.sy + rv.sz * rv.sz)
-function rotation_axis(rv::RodriguesVec)     # what should this return for theta = 0?
+@inline rotation_angle(rv::RotationVec) = sqrt(rv.sx * rv.sx + rv.sy * rv.sy + rv.sz * rv.sz)
+function rotation_axis(rv::RotationVec)     # what should this return for theta = 0?
     theta = rotation_angle(rv)
     return (theta > 0 ? SVector(rv.sx / theta, rv.sy / theta, rv.sz / theta) : SVector(one(theta), zero(theta), zero(theta)))
 end
 
 # define null rotations for convenience
-@inline Base.one(::Type{RodriguesVec}) = RodriguesVec(0.0, 0.0, 0.0)
-@inline Base.one(::Type{RodriguesVec{T}}) where {T} = RodriguesVec{T}(zero(T), zero(T), zero(T))
+@inline Base.one(::Type{RotationVec}) = RotationVec(0.0, 0.0, 0.0)
+@inline Base.one(::Type{RotationVec{T}}) where {T} = RotationVec{T}(zero(T), zero(T), zero(T))
