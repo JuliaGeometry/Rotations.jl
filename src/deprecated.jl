@@ -55,3 +55,4 @@ function Base.rand(::Type{Quat{T}}) where T
     Base.depwarn("`Quat` is deprecated, use `UnitQuaternion` instead.", :Type)
     rand(UnitQuaternion{T})
 end
+Base.@deprecate_binding RodriguesVec RotationVec true
