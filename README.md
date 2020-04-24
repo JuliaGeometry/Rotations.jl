@@ -53,7 +53,7 @@ rotation_angle(r::Rotation)
 #### Initialization
 All rotation types support `one(R)` to construct the identity rotation for the desired parameterization. A random rotation, uniformly sampled over the space of rotations, can be sampled using `rand(R)`. For example:
 ```julia
-r = one(Quat)  # equivalent to Quat(1.0, 0.0, 0.0, 0.0)
+r = one(UnitQuaternion)  # equivalent to Quat(1.0, 0.0, 0.0, 0.0)
 q = rand(UnitQuaternion)
 p = rand(MRP{Float32})
 ```
@@ -61,7 +61,7 @@ p = rand(MRP{Float32})
 #### Conversion
 All rotatations can be converted to another parameterization by simply calling the constructor for the desired parameterization. For example:
 ```julia
-q = rand(Quat)
+q = rand(UnitQuaternion)
 aa = AngleAxis(q)
 r = RotMatrix(aa)
 ```
@@ -81,11 +81,11 @@ r = rand(RotMatrix{3}) # uses Float64 by default
 p = SVector(1.0, 2.0, 3.0) # from StaticArrays.jl, but could use any AbstractVector...
 
 # convert to a quaternion (Quat) and rotate the point
-q = Quat(r)
+q = UnitQuaternion(r)
 p_rotated = q * p
 
 # Compose rotations
-q2 = rand(Quat)
+q2 = rand(UnitQuaternion)
 q3 = q * q2
 
 # Take the inverse (equivalent to transpose)
@@ -95,8 +95,8 @@ p ≈ q_inv * (q * p)
 q4 = q3 / q2  # q4 = q3 * inv(q2)
 q5 = q3 \ q2  # q5 = inv(q3) * q2
 
-# convert to a Stereographic quaternion projection (recommended for applications with differentiation)
-spq = SPQuat(r)
+# convert to a Modified Rodrigues Parameter (aka Stereographic quaternion projection, recommended for applications with differentiation)
+spq = MRP(r)
 
 # convert to the Angle-axis parameterization, or related Rotation vector
 aa = AngleAxis(r)
@@ -117,8 +117,8 @@ RotX(0.1) * RotY(0.2) * RotZ(0.3) === RotXYZ(0.1, 0.2, 0.3)
 # Can calculate Jacobian - derivatives of rotations with respect to parameters
 j1 = Rotations.jacobian(RotMatrix, q) # How does the matrix change w.r.t the 4 Quat parameters?
 j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the 4 Quat parameters?
-# ... all Jacobian's involving RotMatrix, SPQuat and Quat are implemented
-# (SPQuat is ideal for optimization purposes - no constaints/singularities)
+# ... all Jacobian's involving RotMatrix, MRP and Quat are implemented
+# (MRP is ideal for optimization purposes - no constaints/singularities)
 ```
 
 ### Rotation Parameterizations
@@ -142,12 +142,14 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
     renormalized by the constructor to be a unit vector, so that `theta` always
     represents the rotation angle in radians.
 
-3. **Quaternions** `Quat{T}`
+3. **Quaternions** `UnitQuaternion{T}`
 
     A 3D rotation parameterized by a unit quaternion. Note that the constructor
     will renormalize the quaternion to be a unit quaternion, and that although
     they follow the same multiplicative *algebra* as quaternions, it is better
     to think of `Quat` as a 3×3 matrix rather than as a quaternion *number*.
+
+    Previously `Quat`.
 
 4. **Rotation Vector** `RotationVec{T}`
 
@@ -160,17 +162,19 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
     conversions) should be tested.  The Stereographic Quaternion Projection is
     the recommended three parameter format for differentiation.
 
-5. **Stereographic Projection of a unit Quaternion** `SPQuat{T}`
-
-    A 3D rotation encoded by the stereographic projection of a unit quaternion.  This projection can be visualized as a pin hole camera, with the pin hole matching the quaternion `[-1,0,0,0]` and the image plane containing the origin and having normal direction `[1,0,0,0]`.  The "null rotation" `Quaternion(1.0,0,0,0)` then maps to the `SPQuat(0,0,0)`
-
-    These are similar to the Rodrigues vector in that the axis direction is stored in an unnormalized form, and the rotation angle is encoded in the length of the axis.  This type has the nice property that the derivatives of the rotation matrix w.r.t. the `SPQuat` parameters are rational functions, making the `SPQuat` type a good choice for differentiation / optimization.
+    Previously `RodriguesVec`.
 
 6. **Rodrigues Parameters** `RodriguesParam{T}`
     A 3-parameter representation of 3D rotations that has a singularity at 180 degrees. They can be interpreted as a projection of the unit quaternion onto the plane tangent to the quaternion identity. They are computationally efficient and do not have a sign ambiguity.
 
 7. **Modified Rodrigues Parameter** `MRP{T}`
-    Equivalent to `SPQuat{T}`. Are frequently used in aerospace applications since they are a 3-parameter representation whose singularity happens at 360 degrees. In practice, the singularity can be avoided with some switching logic between one of two equivalent MRPs (obtained by projecting the negated quaternion).
+    A 3D rotation encoded by the stereographic projection of a unit quaternion.  This projection can be visualized as a pin hole camera, with the pin hole matching the quaternion `[-1,0,0,0]` and the image plane containing the origin and having normal direction `[1,0,0,0]`.  The "null rotation" `Quaternion(1.0,0,0,0)` then maps to the `MRP(0,0,0)`
+
+    These are similar to the Rodrigues vector in that the axis direction is stored in an unnormalized form, and the rotation angle is encoded in the length of the axis.  This type has the nice property that the derivatives of the rotation matrix w.r.t. the `MRP` parameters are rational functions, making the `MRP` type a good choice for differentiation / optimization.
+
+    They are frequently used in aerospace applications since they are a 3-parameter representation whose singularity happens at 360 degrees. In practice, the singularity can be avoided with some switching logic between one of two equivalent MRPs (obtained by projecting the negated quaternion).
+
+    Previously `SPQuat`.
 
 8. **Cardinal axis rotations** `RotX{T}`, `RotY{T}`, `RotZ{T}`
 
@@ -244,7 +248,7 @@ All parameterizations can be converted to and from (mutable or immutable)
 using StaticArrays, Rotations
 
 # export
-q = Quat(1.0,0,0,0)
+q = UnitQuaternion(1.0,0,0,0)
 matrix_mutable = Array(q)
 matrix_immutable = SMatrix{3,3}(q)
 
