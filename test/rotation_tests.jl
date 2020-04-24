@@ -65,7 +65,7 @@ end
 # build a full list of rotation types including the different angle ordering schemas
 #####################################################################################
 
-rot_types = (RotMatrix{3}, SPQuat, AngleAxis, RotationVec,
+rot_types = (RotMatrix{3}, AngleAxis, RotationVec,
 			 UnitQuaternion, RodriguesParam, MRP,
              RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX,
              RotXYX, RotYZY, RotZXZ, RotXZX, RotYXY, RotZYZ)
@@ -73,7 +73,7 @@ rot_types = (RotMatrix{3}, SPQuat, AngleAxis, RotationVec,
 one_types = (RotX, RotY, RotZ)
 two_types = (RotXY, RotYZ, RotZX, RotXZ, RotYX, RotZY)
 taitbyran_types = (RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX)
-all_types = (RotMatrix{3}, SPQuat, AngleAxis, RotationVec,
+all_types = (RotMatrix{3}, AngleAxis, RotationVec,
 			 UnitQuaternion, RodriguesParam, MRP,
              RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX,
              RotXYX, RotYZY, RotZXZ, RotXZX, RotYXY, RotZYZ,

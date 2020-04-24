@@ -14,6 +14,7 @@ struct MRP{T} <: Rotation{3,T}
     y::T
     z::T
     @inline MRP{T}(x,y,z) where T = new{T}(x,y,z)
+    @inline MRP{T}(p::MRP) where T = new{T}(p.x, p.y, p.z)
 end
 
 # ~~~~~~~~~~~~~~~ Constructors ~~~~~~~~~~~~~~~ #
@@ -46,7 +47,7 @@ end
 
 # ~~~~~~~~~~~~~~~ Math Operations ~~~~~~~~~~~~~~~ #
 LinearAlgebra.norm(p::MRP) = sqrt(p.x^2 + p.y^2 + p.z^2)
-
+Base.inv(p::MRP) = MRP(-p.x, -p.y, -p.z)
 
 # ~~~~~~~~~~~~~~~ Composition ~~~~~~~~~~~~~~~ #
 function (*)(p2::MRP, p1::MRP)

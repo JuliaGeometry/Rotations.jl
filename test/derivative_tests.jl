@@ -25,44 +25,44 @@ using ForwardDiff
             end
         end
 
-        # SPQuat to UnitQuternion
-        @testset "Jacobian (SPQuat -> UnitQuaternion)" begin
+        # MRP to UnitQuternion
+        @testset "Jacobian (MRP -> UnitQuaternion)" begin
             for i = 1:10    # do some repeats
-                spq = rand(SPQuat)  # a random SPQuat
+                p = rand(MRP)  # a random MRP
 
                 # test jacobian to a Rotation matrix
-                R_jac = Rotations.jacobian(UnitQuaternion, spq)
-                FD_jac = ForwardDiff.jacobian(x -> (q = UnitQuaternion(SPQuat(x[1],x[2],x[3]));
+                R_jac = Rotations.jacobian(UnitQuaternion, p)
+                FD_jac = ForwardDiff.jacobian(x -> (q = UnitQuaternion(MRP(x[1],x[2],x[3]));
                                                     SVector(q.w, q.x, q.y, q.z)),
-                                              SVector(spq.x, spq.y, spq.z))
+                                              SVector(p.x, p.y, p.z))
 
                 # compare
                 @test FD_jac ≈ R_jac
             end
         end
 
-        @testset "Jacobian (SPQuat -> UnitQuaternion) [Corner Cases]" begin
-            for spq = [SPQuat(1.0, 0.0, 0.0), SPQuat(0.0, 1.0, 0.0), SPQuat(0.0, 0.0, 1.0)]
+        @testset "Jacobian (MRP -> UnitQuaternion) [Corner Cases]" begin
+            for p = [MRP(1.0, 0.0, 0.0), MRP(0.0, 1.0, 0.0), MRP(0.0, 0.0, 1.0)]
                 # test jacobian to a Rotation matrix
-                R_jac = Rotations.jacobian(UnitQuaternion, spq)
-                FD_jac = ForwardDiff.jacobian(x -> (q = UnitQuaternion(SPQuat(x[1],x[2],x[3]));
+                R_jac = Rotations.jacobian(UnitQuaternion, p)
+                FD_jac = ForwardDiff.jacobian(x -> (q = UnitQuaternion(MRP(x[1],x[2],x[3]));
                                                     SVector(q.w, q.x, q.y, q.z)),
-                                              SVector(spq.x, spq.y, spq.z))
+                                              SVector(p.x, p.y, p.z))
 
                 # compare
                 @test FD_jac ≈ R_jac
             end
         end
 
-        # SPQuat to UnitQuaternion
-        @testset "Jacobian (UnitQuaternion -> SPQuat)" begin
+        # MRP to UnitQuaternion
+        @testset "Jacobian (UnitQuaternion -> MRP)" begin
             for i = 1:10    # do some repeats
                 q = rand(UnitQuaternion)  # a random UnitQuaternion
 
                 # test jacobian to a Rotation matrix
-                R_jac = Rotations.jacobian(SPQuat, q)
-                FD_jac = ForwardDiff.jacobian(x -> (spq = SPQuat(UnitQuaternion(x[1], x[2], x[3], x[4]));
-                                                    SVector(spq.x, spq.y, spq.z)),
+                R_jac = Rotations.jacobian(MRP, q)
+                FD_jac = ForwardDiff.jacobian(x -> (p = MRP(UnitQuaternion(x[1], x[2], x[3], x[4]));
+                                                    SVector(p.x, p.y, p.z)),
                                               SVector(q.w, q.x, q.y, q.z))
 
                 # compare
@@ -70,15 +70,15 @@ using ForwardDiff
             end
         end
 
-        # SPQuat to rotation matrix
-        @testset "Jacobian (SPQuat -> RotMatrix)" begin
+        # MRP to rotation matrix
+        @testset "Jacobian (MRP -> RotMatrix)" begin
             for i = 1:10    # do some repeats
-                spq = rand(SPQuat)  # a random SPQuat
+                p = rand(MRP)  # a random MRP
 
                 # test jacobian to a Rotation matrix
-                R_jac = Rotations.jacobian(RotMatrix, spq)
-                FD_jac = ForwardDiff.jacobian(x -> SVector{9}(SPQuat(x[1], x[2], x[3])),
-                                              SVector(spq.x, spq.y, spq.z))
+                R_jac = Rotations.jacobian(RotMatrix, p)
+                FD_jac = ForwardDiff.jacobian(x -> SVector{9}(MRP(x[1], x[2], x[3])),
+                                              SVector(p.x, p.y, p.z))
 
                 # compare
                 @test FD_jac ≈ R_jac
@@ -165,24 +165,24 @@ using ForwardDiff
             end
         end
 
-        # rotate a point by a SPQuat
-        @testset "Jacobian (SPQuat rotation)" begin
+        # rotate a point by a MRP
+        @testset "Jacobian (MRP rotation)" begin
             for i = 1:10    # do some repeats
-                spq = rand(SPQuat)    # a random quaternion
+                p = rand(MRP)    # a random quaternion
                 v = randn(SVector{3,Float64})
 
                 # test jacobian to a Rotation matrix
-                R_jac = Rotations.jacobian(spq, v)
-                FD_jac = ForwardDiff.jacobian(x -> SPQuat(x[1], x[2], x[3])*v,
-                                              SVector(spq.x, spq.y, spq.z))
+                R_jac = Rotations.jacobian(p, v)
+                FD_jac = ForwardDiff.jacobian(x -> MRP(x[1], x[2], x[3])*v,
+                                              SVector(p.x, p.y, p.z))
 
                 # compare
                 @test FD_jac ≈ R_jac
             end
         end
 #=
-        # rotate a point by an SpQuat
-        @testset "Jacobian (SpQuat rotation)" begin
+        # rotate a point by an MRP
+        @testset "Jacobian (MRP rotation)" begin
 
             for i = 1:10    # do some repeats
 

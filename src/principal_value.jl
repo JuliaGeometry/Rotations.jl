@@ -2,7 +2,7 @@
     principal_value(R::Rotation{3})
 
 **Background:** All non `RotMatrix` rotation types can represent the same `RotMatrix` in two or more ways. Sometimes a
-particular set of numbers is better conditioned (e.g. `SPQuat`) or obeys a particular convention (e.g. `AngleAxis` has
+particular set of numbers is better conditioned (e.g. `MRP`) or obeys a particular convention (e.g. `AngleAxis` has
 non-negative rotation). In order to preserve differentiability it is necessary to allow rotation representations to
 travel slightly away from the nominal domain; this is critical for applications such as optimization or dynamics.
 
@@ -12,20 +12,20 @@ the following properties:
 
 - all angles are between between `-pi` to `pi` (except for `AngleAxis` which is between `0` and `pi`).
 - all `UnitQuaternion have non-negative real part
-- the components of all `SPQuat` have a norm that is at most 1.
+- the components of all `MRP` have a norm that is at most 1.
 - the `RotationVec` rotation is at most `pi`
 
 """
 principal_value(r::RotMatrix) = r
 principal_value(q::Q) where Q <: UnitQuaternion = q.w < zero(eltype(q)) ? Q(-q.w, -q.x, -q.y, -q.z, false) : q
-function principal_value(spq::SPQuat{T}) where {T}
+function principal_value(spq::MRP{T}) where {T}
     # A quat with positive real part: UnitQuaternion( qw,  qx,  qy,  qz)
     #
-    # A spq corresponding to the UnitQuaternion with a positive real part:
-    # SPQuat( qx / (1 + qw),  qy / (1 + qw),  qz / (1 + qw)) ≡ SPQuat(spx, spy, spz)
+    # A mrp corresponding to the UnitQuaternion with a positive real part:
+    # MRP( qx / (1 + qw),  qy / (1 + qw),  qz / (1 + qw)) ≡ MRP(spx, spy, spz)
     #
-    # A spq corresponding to the UnitQuaternion with a negative real part:
-    # SPQuat(-qx / (1 - qw), -qy / (1 - qw), -qz / (1 - qw)) ≡ SPQuat(snx, sny, snz)
+    # A mrp corresponding to the UnitQuaternion with a negative real part:
+    # MRP(-qx / (1 - qw), -qy / (1 - qw), -qz / (1 - qw)) ≡ MRP(snx, sny, snz)
     #
     # Claim:         spx / snx = -1 / (spx^2 + spy^2 + spz^2)
     #     -(1 + qw) / (1 - qw) = -1 / (spx^2 + spy^2 + spz^2)
@@ -36,7 +36,7 @@ function principal_value(spq::SPQuat{T}) where {T}
     alpha_2 = spq.x^2 + spq.y^2 + spq.z^2
     if one(T) < alpha_2
         scale = -one(T) / alpha_2
-        return SPQuat(scale * spq.x, scale * spq.y, scale * spq.z)
+        return MRP(scale * spq.x, scale * spq.y, scale * spq.z)
     else
         return spq
     end

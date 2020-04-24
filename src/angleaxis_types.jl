@@ -103,10 +103,10 @@ end
 
 @inline Base.:*(aa::AngleAxis, r::Rotation) = UnitQuaternion(aa) * r
 @inline Base.:*(aa::AngleAxis, r::RotMatrix) = UnitQuaternion(aa) * r
-@inline Base.:*(aa::AngleAxis, r::SPQuat) = UnitQuaternion(aa) * r
+@inline Base.:*(aa::AngleAxis, r::MRP) = UnitQuaternion(aa) * r
 @inline Base.:*(r::Rotation, aa::AngleAxis) = r * UnitQuaternion(aa)
 @inline Base.:*(r::RotMatrix, aa::AngleAxis) = r * UnitQuaternion(aa)
-@inline Base.:*(r::SPQuat, aa::AngleAxis) = r * UnitQuaternion(aa)
+@inline Base.:*(r::MRP, aa::AngleAxis) = r * UnitQuaternion(aa)
 @inline Base.:*(aa1::AngleAxis, aa2::AngleAxis) = UnitQuaternion(aa1) * UnitQuaternion(aa2)
 
 @inline Base.inv(aa::AngleAxis) = AngleAxis(-aa.theta, aa.axis_x, aa.axis_y, aa.axis_z)
@@ -182,11 +182,11 @@ end
 
 @inline Base.:*(rv::RotationVec, r::Rotation) = UnitQuaternion(rv) * r
 @inline Base.:*(rv::RotationVec, r::RotMatrix) = UnitQuaternion(rv) * r
-@inline Base.:*(rv::RotationVec, r::SPQuat) = UnitQuaternion(rv) * r
+@inline Base.:*(rv::RotationVec, r::MRP) = UnitQuaternion(rv) * r
 @inline Base.:*(rv::RotationVec, r::AngleAxis) = UnitQuaternion(rv) * r
 @inline Base.:*(r::Rotation, rv::RotationVec) = r * UnitQuaternion(rv)
 @inline Base.:*(r::RotMatrix, rv::RotationVec) = r * UnitQuaternion(rv)
-@inline Base.:*(r::SPQuat, rv::RotationVec) = r * UnitQuaternion(rv)
+@inline Base.:*(r::MRP, rv::RotationVec) = r * UnitQuaternion(rv)
 @inline Base.:*(r::AngleAxis, rv::RotationVec) = r * UnitQuaternion(rv)
 @inline Base.:*(rv1::RotationVec, rv2::RotationVec) = UnitQuaternion(rv1) * UnitQuaternion(rv2)
 

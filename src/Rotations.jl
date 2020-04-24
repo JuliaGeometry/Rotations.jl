@@ -11,7 +11,7 @@ import Statistics
 include("util.jl")
 include("core_types.jl")
 include("unitquaternion.jl")
-include("quaternion_types.jl")
+include("mrps.jl")
 include("angleaxis_types.jl")
 include("euler_types.jl")
 include("mean.jl")
@@ -19,7 +19,6 @@ include("derivatives.jl")
 include("principal_value.jl")
 
 include("rodrigues_params.jl")
-include("mrps.jl")
 include("error_maps.jl")
 include("rotation_error.jl")
 include("deprecated.jl")
@@ -27,7 +26,7 @@ include("deprecated.jl")
 export
     Rotation, RotMatrix, RotMatrix2, RotMatrix3,
     Angle2d,
-    Quat, SPQuat, UnitQuaternion,
+    Quat, UnitQuaternion,
     AngleAxis, RodriguesVec, RotationVec, RodriguesParam, MRP,
     RotX, RotY, RotZ,
     RotXY, RotYX, RotZX, RotXZ, RotYZ, RotZY,

@@ -74,13 +74,13 @@ function jacobian(::Type{RotMatrix},  q::UnitQuaternion)
 end
 
 
-# derivatives of R w.r.t a SpQuat
-function jacobian(::Type{RotMatrix},  X::SPQuat)
+# derivatives of R w.r.t a MRP
+function jacobian(::Type{RotMatrix},  X::MRP)
 
-    # get the derivatives of the quaternion w.r.t to the spquat
+    # get the derivatives of the quaternion w.r.t to the mrp
     dQdX = jacobian(UnitQuaternion,  X)
 
-    # get the derivatives of the rotation matrix w.r.t to the spquat
+    # get the derivatives of the rotation matrix w.r.t to the mrp
     dRdQ = jacobian(RotMatrix,  UnitQuaternion(X))
 
     # and return
@@ -90,11 +90,11 @@ end
 
 
 #######################################################
-# Jacobians for transforming Quaternion <-> SpQuat
+# Jacobians for transforming Quaternion <-> MRP
 #
 #######################################################
 
-function jacobian(::Type{UnitQuaternion},  X::SPQuat)
+function jacobian(::Type{UnitQuaternion},  X::MRP)
 
     # differentiating
     # q = Quaternion((1-alpha2) / (alpha2 + 1), 2*X.x / (alpha2 + 1),   2*X.y  / (alpha2 + 1), 2*X.z / (alpha2 + 1), true)
@@ -131,9 +131,9 @@ end
 
 
 #
-# Jacobian converting from a Quaternion to an SpQuat
+# Jacobian converting from a Quaternion to an MRP
 #
-function jacobian(::Type{SPQuat}, q::UnitQuaternion{T}) where T
+function jacobian(::Type{MRP}, q::UnitQuaternion{T}) where T
     den = 1 + q.w
     scale = 1 / den
     dscaledQw = -(scale * scale)
@@ -194,7 +194,7 @@ function jacobian(q::UnitQuaternion, X::AbstractVector)
     return dRdQs -  Xom
 end
 
-function jacobian(spq::SPQuat, X::AbstractVector)
+function jacobian(spq::MRP, X::AbstractVector)
     dQ = jacobian(UnitQuaternion, spq)
     q = UnitQuaternion(spq)
     return jacobian(q, X) * dQ
