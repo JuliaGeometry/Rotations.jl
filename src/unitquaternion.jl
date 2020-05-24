@@ -208,9 +208,9 @@ Base.rand(::Type{UnitQuaternion}) = Base.rand(UnitQuaternion{Float64})
 # ~~~~~~~~~~~~~~~ Math Operations ~~~~~~~~~~~~~~~ #
 
 # Inverses
-conj(q::Q) where Q <: UnitQuaternion = Q(q.w, -q.x, -q.y, -q.z)
+conj(q::Q) where Q <: UnitQuaternion = Q(q.w, -q.x, -q.y, -q.z, false)
 inv(q::UnitQuaternion) = conj(q)
-(-)(q::Q) where Q <: UnitQuaternion = Q(-q.w, -q.x, -q.y, -q.z)
+(-)(q::Q) where Q <: UnitQuaternion = Q(-q.w, -q.x, -q.y, -q.z, false)
 
 # Norms
 LinearAlgebra.norm(q::UnitQuaternion) = sqrt(q.w^2 + q.x^2 + q.y^2 + q.z^2)

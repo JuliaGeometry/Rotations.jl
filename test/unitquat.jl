@@ -22,7 +22,7 @@ import Rotations: vmat, rmult, lmult, hmat, tmat
     @test UnitQuaternion(q) isa UnitQuaternion{Float64}
     @test UnitQuaternion(q32) isa UnitQuaternion{Float32}
 
-    r = normalize(@SVector rand(3))
+    r = @SVector rand(3)
     r32 = SVector{3,Float32}(r)
     @test pure_quaternion(r) isa UnitQuaternion{Float64}
     @test pure_quaternion(r32) isa UnitQuaternion{Float32}
