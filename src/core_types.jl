@@ -235,9 +235,3 @@ function Base.show(io::IO, ::MIME"text/plain", X::Rotation)
     Base.print_array(io, X)
 end
 
-# Removes module name from output, to match other types
-function Base.summary(r::Rotation{N,T}) where {T,N}
-    inds = indices(r)
-    typestring = last(split(string(typeof(r)), '.'; limit = 2))
-    string(Base.dims2string(length.(inds)), " ", typestring)
-end
