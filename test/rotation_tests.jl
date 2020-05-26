@@ -85,6 +85,8 @@ all_types = (RotMatrix{3}, AngleAxis, RotationVec,
 ###############################
 
 @testset "Rotations Tests" begin
+    # Ensure we're testing all 3D rotation types
+    @test length(all_types) == length(setdiff(subtypes(Rotation), [Angle2d]))
 
     ###############################
     # Check fixed relationships
@@ -94,6 +96,7 @@ all_types = (RotMatrix{3}, AngleAxis, RotationVec,
         I = one(SMatrix{3,3,Float64})
         I32 = one(SMatrix{3,3,Float32})
         @testset "$(R)" for R in all_types
+            # one(R) should always return something of type R (#114)
             @test one(R)::R == I
             @test one(R{Float32})::R{Float32} == I32
         end

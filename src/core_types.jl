@@ -109,6 +109,8 @@ end
     RotMatrix(@SMatrix T[c -s; s c])
 end
 
+Base.one(::Type{R}) where {N,R<:RotMatrix{N}} = R(I)
+
 # A rotation is more-or-less defined as being an orthogonal (or unitary) matrix
 Base.inv(r::RotMatrix) = RotMatrix(r.mat')
 

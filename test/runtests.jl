@@ -2,6 +2,7 @@ using Test
 using LinearAlgebra
 using Rotations
 using StaticArrays
+using InteractiveUtils: subtypes
 
 import Random
 
