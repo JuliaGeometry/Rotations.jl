@@ -239,7 +239,7 @@ end
 @inline pure_quaternion(x::Real, y::Real, z::Real) =
     UnitQuaternion(zero(x), x, y, z, false)
 
-function exp(q::Q) where Q <: UnitQuaternion{T} where T
+function exp(q::Q) where Q <: UnitQuaternion
     q.w == q.x == q.y == q.z == 0 && return one(Q)
     θ = vecnorm(q)
     sθ,cθ = sincos(θ)
