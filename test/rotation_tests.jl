@@ -305,6 +305,37 @@ all_types = (RotMatrix{3}, AngleAxis, RotationVec,
             end
         end
     end
+#########################################################################
+    # Check that the eltype is inferred in Rot constructors
+    @testset "Rot constructor eltype promotion" begin
+        @test eltype(RotX(10)) == Float64
+        @test eltype(RotX(10.0f0)) == Float32
+        @test eltype(RotX(BigInt(10))) == BigFloat
+
+        @test eltype(RotXY(10, 20)) == Float64
+        @test eltype(RotXY(10.0, 20.0)) == Float64
+        @test eltype(RotXY(10.0f0, 20.0f0)) == Float32
+        # Mixing ints + floats promotes to narrowest float type
+        @test eltype(RotXY(10.0f0, 20)) == Float32
+        @test eltype(RotXY(20.0, BigInt(10))) == BigFloat
+
+        @test eltype(RotXYZ(10, 20, 30)) == Float64
+        @test eltype(RotXYZ(10.0, 20.0, 30.0)) == Float64
+        @test eltype(RotXYZ(10.0f0, 20.0f0, 30.0f0)) == Float32
+        @test eltype(RotXYZ(10.0f0, 20, 30)) == Float32
+
+        # Promotion is correct with dimensionless Unitful types
+        ° = Unitful.°
+        rad = Unitful.rad
+        @test eltype(RotX(10°)) == Float64
+        @test eltype(RotX(10.0f0°)) == Float32
+        @test eltype(RotX(10rad)) == Float64
+        @test eltype(RotX(BigInt(10)*rad)) == BigFloat
+
+        @test RotX(10°) ≈ RotX(deg2rad(10.0))
+        @test RotXY(10°,20°) ≈ RotXY(deg2rad(10.0), deg2rad(20.0))
+        @test RotXYZ(10°,20°,30°) ≈ RotXYZ(deg2rad(10.0), deg2rad(20.0), deg2rad(30.0))
+    end
 
     #########################################################################
     # Check that isrotation works

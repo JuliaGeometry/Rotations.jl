@@ -9,6 +9,10 @@
 # Single axis rotations #
 #########################
 
+# The element type for a rotation matrix with a given angle type is composed of
+# trigonometric functions of that type.
+Base.@pure rot_eltype(angle_type) = typeof(sin(zero(angle_type)))
+
 for axis in [:X, :Y, :Z]
     RotType = Symbol("Rot" * string(axis))
     @eval begin
@@ -18,7 +22,9 @@ for axis in [:X, :Y, :Z]
             $RotType{T}(r::$RotType) where {T} = new{T}(r.theta)
         end
 
-        @inline $RotType(theta::T) where {T} = $RotType{T}(theta)
+        @inline function $RotType(theta)
+            $RotType{rot_eltype(typeof(theta))}(theta)
+        end
         @inline $RotType(r::$RotType{T}) where {T} = $RotType{T}(r)
 
         @inline (::Type{R})(t::NTuple{9}) where {R<:$RotType} = error("Cannot construct a cardinal axis rotation from a matrix")
@@ -222,7 +228,10 @@ for axis1 in [:X, :Y, :Z]
                 $RotType{T}(r::$RotType) where {T} = new{T}(r.theta1, r.theta2)
             end
 
-            @inline $RotType(theta1::T1, theta2::T2) where {T1, T2} = $RotType{promote_type(T1, T2)}(theta1, theta2)
+            @inline function $RotType(theta1, theta2)
+                ts = promote(theta1, theta2)
+                $RotType{rot_eltype(eltype(ts))}(ts...)
+            end
             @inline $RotType(r::$RotType{T}) where {T} = $RotType{T}(r)
 
             @inline function Base.getindex(r::$RotType{T}, i::Int) where T
@@ -502,7 +511,10 @@ for axis1 in [:X, :Y, :Z]
                     $RotType{T}(r::$RotType) where {T} = new{T}(r.theta1, r.theta2, r.theta3)
                 end
 
-                @inline $RotType(theta1::T1, theta2::T2, theta3::T3) where {T1, T2, T3} = $RotType{promote_type(promote_type(T1, T2), T3)}(theta1, theta2, theta3)
+                @inline function $RotType(theta1, theta2, theta3)
+                    ts = promote(theta1, theta2, theta3)
+                    $RotType{rot_eltype(eltype(ts))}(ts...)
+                end
                 @inline $RotType(r::$RotType{T}) where {T} = $RotType{T}(r)
 
                 @inline function Base.getindex(r::$RotType{T}, i::Int) where T
