@@ -316,7 +316,14 @@ function (*)(q::Q, w::Real) where Q<:UnitQuaternion
 end
 (*)(w::Real, q::UnitQuaternion) = q*w
 
+"""
+    (/)(q::UnitQuaternion, w::Real)
 
+Scalar divison of a quaternion. Breaks unit norm.
+"""
+function (/)(q::Q, w::Real) where Q<:UnitQuaternion
+    return Q(q.w/w, q.x/w, q.y/w, q.z/w, false)
+end
 
 (\)(q1::UnitQuaternion, q2::UnitQuaternion) = conj(q1)*q2  # Equivalent to inv(q1)*q2
 (/)(q1::UnitQuaternion, q2::UnitQuaternion) = q1*conj(q2)  # Equivalent to q1*inv(q2)
