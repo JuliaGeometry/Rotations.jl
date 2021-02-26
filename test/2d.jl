@@ -81,6 +81,33 @@ using Unitful
         end
     end
 
+    # a random rotation of a random unitful point
+    @testset "Rotate Unitful Points" begin
+        repeats = 100
+        for R in [RotMatrix{2}, Angle2d]
+            Random.seed!(0)
+            for i = 1:repeats
+                r = rand(R)
+                m = SMatrix(r)
+                v = randn(SVector{2}) * u"m"
+
+                @test r*v ≈ m*v
+                @test eltype(r*v) <: Unitful.Length
+                @test eltype(m*v) <: Unitful.Length
+            end
+
+            # Test Base.Vector also
+            r = rand(R)
+            m = SMatrix(r)
+            v = randn(2) * u"m"
+
+            @test r*v ≈ m*v
+            @test eltype(r*v) <: Unitful.Length
+            @test eltype(m*v) <: Unitful.Length
+        end
+    end
+
+
     # compose two random rotations
     @testset "Compose rotations" begin
         repeats = 100
