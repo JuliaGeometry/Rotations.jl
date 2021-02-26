@@ -16,8 +16,8 @@ using Unitful: °, rad
     @testset "Unitful" begin
         # Make sure rotations created from unitful angles
         # don't extraneously contain those units (see issue #55)
-        @test eltype(Angle2d(10°)) isa Real
-        @test eltype(Angle2d(20rad)) isa Real
+        @test eltype(Angle2d(10°)) <: Real
+        @test eltype(Angle2d(20rad)) <: Real
     end
 
     ###############################
