@@ -1,5 +1,5 @@
 using Rotations, StaticArrays, Test
-using Unitful: °, rad
+using Unitful
 
 @testset "2d Rotations" begin
 
@@ -16,8 +16,8 @@ using Unitful: °, rad
     @testset "Unitful" begin
         # Make sure rotations created from unitful angles
         # don't extraneously contain those units (see issue #55)
-        @test eltype(Angle2d(10°)) <: Real
-        @test eltype(Angle2d(20rad)) <: Real
+        @test eltype(Angle2d(10u"°")) <: Real
+        @test eltype(Angle2d(20u"rad")) <: Real
     end
 
     ###############################
