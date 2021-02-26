@@ -1,4 +1,5 @@
 using Rotations, StaticArrays, Test
+using Unitful: °, rad
 
 @testset "2d Rotations" begin
 
@@ -10,6 +11,13 @@ using Rotations, StaticArrays, Test
         r = one(RotMatrix{2,Float32})
         @test RotMatrix((1,0,0,1)) == RotMatrix(@SMatrix [1 0; 0 1])
         @test_throws DimensionMismatch RotMatrix((1,0,0,1,0))
+    end
+
+    @testset "Unitful" begin
+        # Make sure rotations created from unitful angles
+        # don't extraneously contain those units (see issue #55)
+        @test eltype(Angle2d(10°)) isa Real
+        @test eltype(Angle2d(20rad)) isa Real
     end
 
     ###############################
