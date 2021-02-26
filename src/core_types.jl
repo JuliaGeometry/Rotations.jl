@@ -163,7 +163,7 @@ end
     end
     x,y = v
     s,c = sincos(r.theta)
-    T = eltype(r)
+    T = Base.promote_op(*, typeof(s), eltype(v))
     similar_type(v,T)(c*x - s*y, s*x + c*y)
 end
 
