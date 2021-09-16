@@ -59,6 +59,12 @@ import Rotations: vmat, rmult, lmult, hmat, tmat
     @test 2 * q == UnitQuaternion((@SVector [2, 4, 6, 8.0]), false)
     @test q * 2 == UnitQuaternion((@SVector [2, 4, 6, 8.0]), false)
 
+    # Test spherical linear interpolation
+    a, b = UnitQuaternion(1.0, 0.0, 0.0, 0.0), UnitQuaternion(0.0, 0.0, 0.0, 1)
+    @test slerp(a, b, 0.0) ≈ a
+    @test slerp(a, b, 1.0) ≈ b
+    @test slerp(a, b, 0.5) ≈ UnitQuaternion(sin(π/4), 0, 0, cos(π/4))
+
     # Axis-angle
     ϕ = 0.1 * @SVector [1, 0, 0]
     q = expm(ϕ)

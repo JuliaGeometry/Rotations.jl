@@ -36,6 +36,9 @@ export
     # Quaternion math ops
     logm, expm, ⊖, ⊕,
 
+    # Quaternion spherical linear interpolation
+    slerp,
+
     # Quaternion maps
     ExponentialMap, QuatVecMap, CayleyMap, MRPMap, IdentityMap,
 
