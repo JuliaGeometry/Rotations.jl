@@ -1,6 +1,3 @@
-# we generate code in this module, so precompile where possible
-__precompile__(true)
-
 module Rotations
 
 using LinearAlgebra
