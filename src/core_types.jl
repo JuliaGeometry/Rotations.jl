@@ -104,6 +104,7 @@ Base.@propagate_inbounds Base.getindex(r::RotMatrix, i::Int) = r.mat[i]
     s, c = sincos(θ)
     RotMatrix(@SMatrix [c -s; s c])
 end
+(::Type{RotMatrix{2}})(::Irrational{:π}) = RotMatrix(@SMatrix [-1 0; 0 -1])
 @inline function RotMatrix{2,T}(θ::Real) where T
     s, c = sincos(θ)
     RotMatrix(@SMatrix T[c -s; s c])

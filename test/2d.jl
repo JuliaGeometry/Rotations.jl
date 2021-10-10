@@ -27,6 +27,10 @@ using Rotations, StaticArrays, Test
         end
     end
 
+    @testset "Rotations by π" begin
+        @test RotMatrix{2}(π) === RotMatrix(@SMatrix [-1 0; 0 -1])
+    end
+
     ################################
     # check on the inverse function
     ################################
