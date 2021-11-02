@@ -65,14 +65,16 @@ end
 # build a full list of rotation types including the different angle ordering schemas
 #####################################################################################
 
-rot_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
+rot_types = (RotMatrix{3}, AngleAxis, RotationVec,
+			 UnitQuaternion, RodriguesParam, MRP,
              RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX,
              RotXYX, RotYZY, RotZXZ, RotXZX, RotYXY, RotZYZ)
 
 one_types = (RotX, RotY, RotZ)
 two_types = (RotXY, RotYZ, RotZX, RotXZ, RotYX, RotZY)
 taitbyran_types = (RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX)
-all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
+all_types = (RotMatrix{3}, AngleAxis, RotationVec,
+			 UnitQuaternion, RodriguesParam, MRP,
              RotXYZ, RotYZX, RotZXY, RotXZY, RotYXZ, RotZYX,
              RotXYX, RotYZY, RotZXZ, RotXZX, RotYXY, RotZYZ,
              RotX, RotY, RotZ,
@@ -83,6 +85,8 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
 ###############################
 
 @testset "Rotations Tests" begin
+    # Ensure we're testing all 3D rotation types
+    @test length(all_types) == length(setdiff(subtypes(Rotation), [Angle2d]))
 
     ###############################
     # Check fixed relationships
@@ -92,9 +96,33 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
         I = one(SMatrix{3,3,Float64})
         I32 = one(SMatrix{3,3,Float32})
         @testset "$(R)" for R in all_types
+            # one(R) should always return something of type R (#114)
             @test one(R)::R == I
             @test one(R{Float32})::R{Float32} == I32
         end
+    end
+
+    ###############################
+    # Check zero function
+    ###############################
+
+    @testset "zero checks" begin
+        @testset "$(R)" for R in all_types
+            # zero
+            @test zero(R) == zero(R{Float64}) == zero(one(R))
+            @test zero(R) isa SMatrix
+            @test zero(R{Float64}) isa SMatrix
+            @test zero(one(R)) isa SMatrix
+            # zeros
+            @test zeros(R)[1] == zeros(R,3)[1] == zeros(R,3,3)[1] == zeros(R,(3,3,3))[1] == zero(R)
+            @test zeros(R) isa Array{<:SMatrix,0}
+            @test zeros(R,3) isa Array{<:SMatrix,1}
+            @test zeros(R,3,3) isa Array{<:SMatrix,2}
+            @test zeros(R,(3,3,3)) isa Array{<:SMatrix,3}
+        end
+
+        @test_throws ErrorException zero(Rotation)
+        @test_throws ErrorException zero(RotMatrix)
     end
 
     ################################
@@ -107,11 +135,16 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
         @testset "$(R)" for R in all_types
             Random.seed!(0)
             for i = 1:repeats
-                r = rand(R)
-                @test inv(r) == adjoint(r)
-                @test inv(r) == transpose(r)
-                @test inv(r)*r ≈ I
-                @test r*inv(r) ≈ I
+                r1 = rand(R)
+                r2 = rand(R)
+                @test inv(r1) == adjoint(r1)
+                @test inv(r1) == transpose(r1)
+                @test inv(r1)*r1 ≈ I
+                @test r1*inv(r1) ≈ I
+                @test r1/r1 ≈ I
+                @test r1\r1 ≈ I
+                @test r1/r2 ≈ r1*inv(r2)
+                @test r1\r2 ≈ inv(r1)*r2
             end
         end
     end
@@ -143,20 +176,23 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
 
     @testset "Quaternion double cover" begin
         repeats = 100
-        for i = 1 : repeats
-            q = rand(Quat)
+		@testset "Quaternion double cover" begin
+			Q = UnitQuaternion
+	        for i = 1 : repeats
+	            q = rand(UnitQuaternion)
 
-            q2 = Quat(-q.w, -q.x, -q.y, -q.z) # normalize: need a tolerance
-            @test SVector(q2.w, q2.x, q2.y, q2.z) ≈ SVector(-q.w, -q.x, -q.y, -q.z) atol = 100 * eps()
-            @test q ≈ q2 atol = 100 * eps()
+	            q2 = UnitQuaternion(-q.w, -q.x, -q.y, -q.z) # normalize: need a tolerance
+	            @test SVector(q2.w, q2.x, q2.y, q2.z) ≈ SVector(-q.w, -q.x, -q.y, -q.z) atol = 100 * eps()
+	            @test q ≈ q2 atol = 100 * eps()
 
-            q3 = Quat(-q.w, -q.x, -q.y, -q.z, false) # don't normalize: everything is exact
-            @test (q3.w, q3.x, q3.y, q3.z) == (-q.w, -q.x, -q.y, -q.z)
-            @test q == q3
+	            q3 = UnitQuaternion(-q.w, -q.x, -q.y, -q.z, false) # don't normalize: everything is exact
+	            @test (q3.w, q3.x, q3.y, q3.z) == (-q.w, -q.x, -q.y, -q.z)
+	            @test q == q3
 
-            Δq = q \ q3
-            @test Δq ≈ one(Quat) atol = 100 * eps()
-        end
+	            Δq = q \ q3
+	            @test Δq ≈ one(UnitQuaternion) atol = 100 * eps()
+	        end
+		end
     end
 
     # compose two random rotations
@@ -195,20 +231,38 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
         end
     end
 
+    @testset "Convert rotations 1-axis -> 2-axis" begin
+        repeats = 100
+        @testset "convert $(R1) -> $(R2)" for R1 in one_types, R2 in two_types
+            # Check if the two-axis include one-axis
+            if string(R1)[end] in string(R2)[end-1:end]
+                Random.seed!(0)
+                for i = 1:repeats
+                    r1 = rand(R1)
+                    m1 = SMatrix(r1)
+
+                    r2 = R2(r1)
+
+                    @test r2 ≈ m1
+                end
+            end
+        end
+    end
+
     #########################################################################
-    # Test robustness of DCM to Quat function
+    # Test robustness of DCM to UnitQuaternion function
     #########################################################################
     function nearest_orthonormal(not_orthonormal)
         u,s,v = svd(not_orthonormal)
         return u * Diagonal([1, 1, sign(det(u * transpose(v)))]) * transpose(v)
     end
 
-    @testset "DCM to Quat" begin
+    @testset "DCM to UnitQuaternion" begin
         pert = 1e-3
         for type_rot in all_types
             for _ = 1:100
                 not_orthonormal = rand(type_rot) + rand(3, 3) * pert
-                quat_ill_cond = Quat(not_orthonormal)
+                quat_ill_cond = UnitQuaternion(not_orthonormal)
                 @test 0 <= quat_ill_cond.w
                 @test norm(quat_ill_cond - nearest_orthonormal(not_orthonormal)) < 10 * pert
             end
@@ -235,16 +289,16 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
                 @test rotation_axis(r2) ≈ axis
             end
         end
-	@test norm(rotation_axis(Quat(1.0, 0.0, 0.0, 0.0))) ≈ 1.0
+		@test norm(rotation_axis(UnitQuaternion(1.0, 0.0, 0.0, 0.0))) ≈ 1.0
 
         # TODO RotX, RotXY?
     end
 
     #########################################################################
-    # Check construction of Quat given two vectors
+    # Check construction of UnitQuaternion given two vectors
     #########################################################################
 
-    @testset "Testing construction of Quat given two vectors" begin
+    @testset "Testing construction of UnitQuaternion given two vectors" begin
         angle_axis_test(from, to, rot, atol) = isapprox(rot * from * norm(to) / norm(from), to; atol = atol)
 
         for i = 1 : 10000
@@ -298,6 +352,37 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
             end
         end
     end
+#########################################################################
+    # Check that the eltype is inferred in Rot constructors
+    @testset "Rot constructor eltype promotion" begin
+        @test eltype(RotX(10)) == Float64
+        @test eltype(RotX(10.0f0)) == Float32
+        @test eltype(RotX(BigInt(10))) == BigFloat
+
+        @test eltype(RotXY(10, 20)) == Float64
+        @test eltype(RotXY(10.0, 20.0)) == Float64
+        @test eltype(RotXY(10.0f0, 20.0f0)) == Float32
+        # Mixing ints + floats promotes to narrowest float type
+        @test eltype(RotXY(10.0f0, 20)) == Float32
+        @test eltype(RotXY(20.0, BigInt(10))) == BigFloat
+
+        @test eltype(RotXYZ(10, 20, 30)) == Float64
+        @test eltype(RotXYZ(10.0, 20.0, 30.0)) == Float64
+        @test eltype(RotXYZ(10.0f0, 20.0f0, 30.0f0)) == Float32
+        @test eltype(RotXYZ(10.0f0, 20, 30)) == Float32
+
+        # Promotion is correct with dimensionless Unitful types
+        ° = Unitful.°
+        rad = Unitful.rad
+        @test eltype(RotX(10°)) == Float64
+        @test eltype(RotX(10.0f0°)) == Float32
+        @test eltype(RotX(10rad)) == Float64
+        @test eltype(RotX(BigInt(10)*rad)) == BigFloat
+
+        @test RotX(10°) ≈ RotX(deg2rad(10.0))
+        @test RotXY(10°,20°) ≈ RotXY(deg2rad(10.0), deg2rad(20.0))
+        @test RotXYZ(10°,20°,30°) ≈ RotXYZ(deg2rad(10.0), deg2rad(20.0), deg2rad(30.0))
+    end
 
     #########################################################################
     # Check that isrotation works
@@ -339,9 +424,15 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
         @test norm([aa.axis_x, aa.axis_y, aa.axis_z]) ≈ norm([x, y, z])
 
         w, x, y, z = 1., 2., 3., 4.
-        quat = Quat(w, x, y, z)
+        quat = UnitQuaternion(w, x, y, z)
         @test norm([quat.w, quat.x, quat.y, quat.z]) ≈ 1.
-        quat = Quat(w, x, y, z, false)
+        quat = UnitQuaternion(w, x, y, z, false)
+        @test norm([quat.w, quat.x, quat.y, quat.z]) ≈ norm([w, x, y, z])
+
+        w, x, y, z = 1., 2., 3., 4.
+        quat = UnitQuaternion(w, x, y, z)
+        @test norm([quat.w, quat.x, quat.y, quat.z]) ≈ 1.
+        quat = UnitQuaternion(w, x, y, z, false)
         @test norm([quat.w, quat.x, quat.y, quat.z]) ≈ norm([w, x, y, z])
     end
 
@@ -355,11 +446,34 @@ all_types = (RotMatrix{3}, Quat, SPQuat, AngleAxis, RodriguesVec,
         r = rand(RotMatrix{2})
         show(io, MIME("text/plain"), r)
         str = String(take!(io))
-        @test startswith(str, "2×2 RotMatrix{2,Float64,4}:")
+        if VERSION ≥ v"1.6"
+            @test startswith(str, "2×2 RotMatrix2{Float64}")
+        else
+            @test startswith(str, "2×2 RotMatrix{2,Float64,4}")
+        end
 
         rxyz = RotXYZ(1.0, 2.0, 3.0)
         show(io, MIME("text/plain"), rxyz)
         str = String(take!(io))
-        @test startswith(str, "3×3 RotXYZ{Float64}(1.0, 2.0, 3.0):")
+        @test startswith(str, "3×3 RotXYZ{Float64}") && occursin("(1.0, 2.0, 3.0):", str)
+    end
+
+    #########################################################################
+    # Check that 137 is solved
+    #########################################################################
+    @testset "Regression test issue 137" begin
+        @test det(RotationVec(1e19, 0.0, 0.0)) ≈ 1.
+    end
+
+    @testset "params" begin
+        p1, p2, p3, p4 = randn(4)
+        @test Rotations.params(RotX(p1)) == [p1]
+        @test Rotations.params(RotXY(p1,p2)) == [p1,p2]
+        @test Rotations.params(RotXYZ(p1,p2,p3)) == [p1,p2,p3]
+        @test Rotations.params(AngleAxis(p1,p2,p3,p4)) ≈ pushfirst!(normalize([p2,p3,p4]),p1)
+        @test Rotations.params(RotationVec(p1,p2,p3)) == [p1,p2,p3]
+        @test Rotations.params(UnitQuaternion(p1,p2,p3,p4)) ≈ normalize([p1,p2,p3,p4])
+        @test Rotations.params(MRP(p1,p2,p3)) == [p1,p2,p3]
+        @test Rotations.params(RodriguesParam(p1,p2,p3)) == [p1,p2,p3]
     end
 end

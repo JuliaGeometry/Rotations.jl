@@ -29,7 +29,7 @@ Args:
 Find the mean `r̄` of a set of rotations `r`. The returned rotation minimizes `sum_i=1:n (||r[i] - r̄||)`  with `||` the Frobenius norm, or
 equivalently minimizes `sum_i=1:n (sin(ϕ[i] / 2))^2`, where `ϕ[i] = rotation_angle(r[i] / r̄)`.
 """
-function Statistics.mean(qvec::AbstractVector{Quat{T}}, method::Integer = 0) where T
+function Statistics.mean(qvec::AbstractVector{UnitQuaternion{T}}, method::Integer = 0) where T
     #if (method == 0)
         M = zeros(4, 4)
         for i = 1:length(qvec)
@@ -38,7 +38,7 @@ function Statistics.mean(qvec::AbstractVector{Quat{T}}, method::Integer = 0) whe
             M .+= Qi * (Qi')
         end
         evec = eigfact(Symmetric(M), 4:4)
-        Qbar = Quat(evec.vectors[1], evec.vectors[2], evec.vectors[3], evec.vectors[4]) # This will renormalize the quaternion...
+        Qbar = UnitQuaternion(evec.vectors[1], evec.vectors[2], evec.vectors[3], evec.vectors[4]) # This will renormalize the quaternion...
     #else
     #    error("I haven't coded this")
     #end
@@ -47,5 +47,5 @@ function Statistics.mean(qvec::AbstractVector{Quat{T}}, method::Integer = 0) whe
 end
 
 function Statistics.mean(vec::AbstractVector{R}) where R<:Rotation
-    R(mean(convert(Vector{Quat{eltype(R)}}, vec)))
+    R(mean(convert(Vector{UnitQuaternion{eltype(R)}}, vec)))
 end

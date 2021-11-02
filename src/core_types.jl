@@ -12,6 +12,17 @@ Base.@pure StaticArrays.Size(::Type{R}) where {R<:Rotation} = Size(supertype(R))
 Base.adjoint(r::Rotation) = inv(r)
 Base.transpose(r::Rotation{N,T}) where {N,T<:Real} = inv(r)
 
+# Generate zero-matrix with SMatrix
+# Note that zeros(Rotation3,dims...) is not Array{<:Rotation} but Array{<:StaticMatrix{3,3}}
+Base.zero(::Rotation{N,T}) where {N,T} = @SMatrix zeros(T,N,N)
+Base.zero(::Type{Rotation}) = error("The dimension of rotation is not specified.")
+Base.zero(::Type{<:Rotation{N}}) where N = @SMatrix zeros(N,N)
+Base.zero(::Type{<:Rotation{N,T}}) where {N,T} = @SMatrix zeros(T,N,N)
+Base.zeros(::Type{R}) where {R<:Rotation} = zeros(R, ()) # avoid StaticArray constructor
+Base.zeros(::Type{R}, dims::Base.DimOrInd...) where {R<:Rotation} = zeros(typeof(zero(R)),dims...)
+Base.zeros(::Type{R}, dims::NTuple{N, Integer}) where {R<:Rotation, N} = zeros(typeof(zero(R)),dims)
+Base.zeros(::Type{R}, dims::Tuple{}) where {R<:Rotation} = zeros(typeof(zero(R)),dims) # avoid ambiguity
+
 # Rotation angles and axes can be obtained by converting to the AngleAxis type
 rotation_angle(r::Rotation{3}) = rotation_angle(AngleAxis(r))
 rotation_axis(r::Rotation{3}) = rotation_axis(AngleAxis(r))
@@ -25,25 +36,25 @@ Base.convert(::Type{R}, rot::Rotation{N}) where {N,R<:Rotation{N}} = R(rot)
 Base.@pure StaticArrays.similar_type(::Union{R,Type{R}}) where {R <: Rotation} = SMatrix{size(R)..., eltype(R), prod(size(R))}
 Base.@pure StaticArrays.similar_type(::Union{R,Type{R}}, ::Type{T}) where {R <: Rotation, T} = SMatrix{size(R)..., T, prod(size(R))}
 
-function Base.rand(::Type{R}) where R <: Rotation{2}
+function Random.rand(rng::AbstractRNG, ::Random.SamplerType{R}) where R <: Rotation{2}
     T = eltype(R)
     if T == Any
         T = Float64
     end
 
-    R(2π * rand(T))
+    R(2π * rand(rng, T))
 end
 
 # A random rotation can be obtained easily with unit quaternions
 # The unit sphere in R⁴ parameterizes quaternion rotations according to the
 # Haar measure of SO(3) - see e.g. http://math.stackexchange.com/questions/184086/uniform-distributions-on-the-space-of-rotations-in-3d
-function Base.rand(::Type{R}) where R <: Rotation{3}
+function Random.rand(rng::AbstractRNG, ::Random.SamplerType{R}) where R <: Rotation{3}
     T = eltype(R)
     if T == Any
         T = Float64
     end
 
-    q = Quat(randn(T), randn(T), randn(T), randn(T))
+    q = UnitQuaternion(randn(rng, T), randn(rng, T), randn(rng, T), randn(rng, T))
     return R(q)
 end
 
@@ -84,6 +95,8 @@ struct RotMatrix{N,T,L} <: Rotation{N,T} # which is <: AbstractMatrix{T}
 end
 RotMatrix(x::SMatrix{N,N,T,L}) where {N,T,L} = RotMatrix{N,T,L}(x)
 
+Base.zero(::Type{RotMatrix}) = error("The dimension of rotation is not specified.")
+
 # These functions (plus size) are enough to satisfy the entire StaticArrays interface:
 for N = 2:3
     L = N*N
@@ -108,6 +121,8 @@ end
     s, c = sincos(θ)
     RotMatrix(@SMatrix T[c -s; s c])
 end
+
+Base.one(::Type{R}) where {N,R<:RotMatrix{N}} = R(I)
 
 # A rotation is more-or-less defined as being an orthogonal (or unitary) matrix
 Base.inv(r::RotMatrix) = RotMatrix(r.mat')
@@ -137,6 +152,8 @@ of `getindex` etc. are computed on the fly.
 struct Angle2d{T} <: Rotation{2,T}
     theta::T
 end
+
+params(r::Angle2d) = SVector{1}(r.theta)
 
 Angle2d(r::Rotation{2}) = Angle2d(rotation_angle(r))
 Angle2d{T}(r::Rotation{2}) where {T} = Angle2d{T}(rotation_angle(r))
@@ -235,9 +252,3 @@ function Base.show(io::IO, ::MIME"text/plain", X::Rotation)
     Base.print_array(io, X)
 end
 
-# Removes module name from output, to match other types
-function Base.summary(r::Rotation{N,T}) where {T,N}
-    inds = indices(r)
-    typestring = last(split(string(typeof(r)), '.'; limit = 2))
-    string(Base.dims2string(length.(inds)), " ", typestring)
-end

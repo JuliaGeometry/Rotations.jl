@@ -9,7 +9,7 @@ const suite = BenchmarkGroup()
 Random.seed!(1)
 
 noneuler = suite["Non-Euler conversions"] = BenchmarkGroup()
-rotationtypes = [RotMatrix3{T}, Quat{T}, SPQuat{T}, AngleAxis{T}, RodriguesVec{T}]
+rotationtypes = [RotMatrix3{T}, UnitQuaternion{T}, MRP{T}, AngleAxis{T}, RotationVec{T}]
 for (from, to) in product(rotationtypes, rotationtypes)
     if from != to
         name = "$(string(from)) -> $(string(to))"
@@ -44,7 +44,7 @@ if isfile(paramspath)
     loadparams!(suite, BenchmarkTools.load(paramspath)[1], :evals, :samples);
 else
     tune!(suite, verbose = true)
-    BenchmarkTools.save(paramspath, params(suite))
+    BenchmarkTools.save(paramspath, BenchmarkTools.params(suite))
 end
 
 results = run(suite, verbose=true)

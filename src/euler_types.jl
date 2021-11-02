@@ -9,6 +9,10 @@
 # Single axis rotations #
 #########################
 
+# The element type for a rotation matrix with a given angle type is composed of
+# trigonometric functions of that type.
+Base.@pure rot_eltype(angle_type) = typeof(sin(zero(angle_type)))
+
 for axis in [:X, :Y, :Z]
     RotType = Symbol("Rot" * string(axis))
     @eval begin
@@ -18,10 +22,13 @@ for axis in [:X, :Y, :Z]
             $RotType{T}(r::$RotType) where {T} = new{T}(r.theta)
         end
 
-        @inline $RotType(theta::T) where {T} = $RotType{T}(theta)
+        @inline function $RotType(theta)
+            $RotType{rot_eltype(typeof(theta))}(theta)
+        end
         @inline $RotType(r::$RotType{T}) where {T} = $RotType{T}(r)
 
-        @inline (::Type{R})(t::NTuple{9}) where {R<:$RotType} = error("Cannot construct a cardinal axis rotation from a matrix")
+        @inline $RotType(::NTuple{9}) = error("Cannot construct a cardinal axis rotation from a matrix")
+        @inline $RotType{T}(::NTuple{9}) where T = error("Cannot construct a cardinal axis rotation from a matrix")
 
         @inline Base.:*(r1::$RotType, r2::$RotType) = $RotType(r1.theta + r2.theta)
 
@@ -30,16 +37,18 @@ for axis in [:X, :Y, :Z]
         # define null rotations for convenience
         @inline Base.one(::Type{$RotType}) = $RotType(0.0)
         @inline Base.one(::Type{$RotType{T}}) where {T} = $RotType{T}(zero(T))
+
+        params(r::$RotType) = SVector{1}(r.theta)
     end
 end
 
-function Base.rand(::Type{R}) where R <: Union{RotX,RotY,RotZ}
+function Random.rand(rng::AbstractRNG, ::Random.SamplerType{R}) where R <: Union{RotX,RotY,RotZ}
     T = eltype(R)
     if T == Any
         T = Float64
     end
 
-    return R(2*pi*rand(T))
+    return R(2π*rand(rng, T))
 end
 
 
@@ -222,7 +231,10 @@ for axis1 in [:X, :Y, :Z]
                 $RotType{T}(r::$RotType) where {T} = new{T}(r.theta1, r.theta2)
             end
 
-            @inline $RotType(theta1::T1, theta2::T2) where {T1, T2} = $RotType{promote_type(T1, T2)}(theta1, theta2)
+            @inline function $RotType(theta1, theta2)
+                ts = promote(theta1, theta2)
+                $RotType{rot_eltype(eltype(ts))}(ts...)
+            end
             @inline $RotType(r::$RotType{T}) where {T} = $RotType{T}(r)
 
             @inline function Base.getindex(r::$RotType{T}, i::Int) where T
@@ -230,6 +242,10 @@ for axis1 in [:X, :Y, :Z]
             end
 
             @inline (::Type{R})(t::NTuple{9}) where {R<:$RotType} = error("Cannot construct a two-axis rotation from a matrix")
+
+            # Convert a single-axis rotation to a two-axis rotation:
+            @inline (::Type{R})(r1::$Rot1Type) where {R<:$RotType} = $RotType(r1.theta, 0)
+            @inline (::Type{R})(r2::$Rot2Type) where {R<:$RotType} = $RotType(0, r2.theta)
 
             # Composing single-axis rotations to obtain a two-axis rotation:
             @inline Base.:*(r1::$Rot1Type, r2::$Rot2Type) = $RotType(r1.theta, r2.theta)
@@ -243,11 +259,13 @@ for axis1 in [:X, :Y, :Z]
             # define null rotations for convenience
             @inline Base.one(::Type{$RotType}) = $RotType(0.0, 0.0)
             @inline Base.one(::Type{$RotType{T}}) where {T} = $RotType{T}(zero(T), zero(T))
+
+            params(r::$RotType) = SVector{2}(r.theta1, r.theta2)
         end
     end
 end
 
-function Base.rand(::Type{R}) where R <: Union{RotXY,RotYZ,RotZX, RotXZ, RotYX, RotZY}
+function Random.rand(rng::AbstractRNG, ::Random.SamplerType{R}) where R <: Union{RotXY,RotYZ,RotZX, RotXZ, RotYX, RotZY}
     T = eltype(R)
     if T == Any
         T = Float64
@@ -256,7 +274,7 @@ function Base.rand(::Type{R}) where R <: Union{RotXY,RotYZ,RotZX, RotXZ, RotYX, 
     # Not really sure what this distribution is, but it's also not clear what
     # it should be! rand(RotXY) *is* invariant to pre-rotations by a RotX and
     # post-rotations by a RotY...
-    return R(2*pi*rand(T), 2*pi*rand(T))
+    return R(2π*rand(rng, T), 2π*rand(rng, T))
 end
 
 
@@ -490,8 +508,13 @@ for axis1 in [:X, :Y, :Z]
         for axis3 in filter(axis -> axis != axis2, [:X, :Y, :Z])
             Rot3Type = Symbol("Rot" * string(axis3))
             Rot23Type = Symbol("Rot" * string(axis2) * string(axis3))
+            Rot13Type = Symbol("Rot" * string(axis1) * string(axis3))
             RotType = Symbol("Rot" * string(axis1) * string(axis2) * string(axis3))
             InvRotType = Symbol("Rot" * string(axis3) * string(axis2) * string(axis1))
+
+            # Note that axis0 is used only if axis1==axis3
+            axis0 = setdiff!([:X, :Y, :Z], [axis1, axis2])[1]
+            Rot0Type = Symbol("Rot" * string(axis0))
 
             @eval begin
                 struct $RotType{T} <: Rotation{3,T}
@@ -502,11 +525,37 @@ for axis1 in [:X, :Y, :Z]
                     $RotType{T}(r::$RotType) where {T} = new{T}(r.theta1, r.theta2, r.theta3)
                 end
 
-                @inline $RotType(theta1::T1, theta2::T2, theta3::T3) where {T1, T2, T3} = $RotType{promote_type(promote_type(T1, T2), T3)}(theta1, theta2, theta3)
+                @inline function $RotType(theta1, theta2, theta3)
+                    ts = promote(theta1, theta2, theta3)
+                    $RotType{rot_eltype(eltype(ts))}(ts...)
+                end
                 @inline $RotType(r::$RotType{T}) where {T} = $RotType{T}(r)
 
                 @inline function Base.getindex(r::$RotType{T}, i::Int) where T
                     Tuple(r)[i] # Slow...
+                end
+
+                # Convert a single-axis rotation to a three-axis rotation:
+                @inline (::Type{R})(r1::$Rot1Type) where {R<:$RotType} = $RotType(r1.theta, 0, 0)
+                @inline (::Type{R})(r2::$Rot2Type) where {R<:$RotType} = $RotType(0, r2.theta, 0)
+                if $Rot1Type ≠ $Rot3Type
+                    # This if block prevent redefinitions. (e.g. RotXYX(RotX(42)))
+                    @inline (::Type{R})(r3::$Rot3Type) where {R<:$RotType} = $RotType(0, 0, r3.theta)
+                else
+                    if ($Rot0Type,$Rot1Type,$Rot2Type) in ((RotX, RotY, RotZ), (RotY, RotZ, RotX), (RotZ, RotX, RotY))
+                        # Even permutation (e.g. RotXYX(RotZ(42)) == RotXYX(π/2, 42, -π/2))
+                        @inline (::Type{R})(r0::$Rot0Type) where {R<:$RotType} = $RotType(π/2, r0.theta, -π/2)
+                    else
+                        # Odd permutation (e.g. RotXZX(RotY(42)) == RotXYX(-π/2, 42, π/2))
+                        @inline (::Type{R})(r0::$Rot0Type) where {R<:$RotType} = $RotType(-π/2, r0.theta, π/2)
+                    end
+                end
+
+                # Convert a two-axis rotation to a three-axis rotation:
+                @inline (::Type{R})(r12::$Rot12Type) where {R<:$RotType} = $RotType(r12.theta1, r12.theta2, 0)
+                @inline (::Type{R})(r23::$Rot23Type) where {R<:$RotType} = $RotType(0, r23.theta1, r23.theta2)
+                if $Rot1Type ≠ $Rot3Type
+                    @inline (::Type{R})(r13::$Rot13Type) where {R<:$RotType} = $RotType(r13.theta1, 0, r13.theta2)
                 end
 
                 # Composing single-axis rotations with two-axis rotations:
@@ -522,6 +571,8 @@ for axis1 in [:X, :Y, :Z]
                 # define null rotations for convenience
                 @inline Base.one(::Type{$RotType}) = $RotType(0.0, 0.0, 0.0)
                 @inline Base.one(::Type{$RotType{T}}) where {T} = $RotType{T}(zero(T), zero(T), zero(T))
+
+                params(r::$RotType) = SVector{3}(r.theta1, r.theta2, r.theta3)
             end
         end
     end

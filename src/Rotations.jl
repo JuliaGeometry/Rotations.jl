@@ -5,28 +5,43 @@ module Rotations
 
 using LinearAlgebra
 using StaticArrays
+using Random
 
 import Statistics
 
 include("util.jl")
 include("core_types.jl")
-include("quaternion_types.jl")
-include("angleaxis_types.jl")
+include("unitquaternion.jl")
+include("mrps.jl")
 include("euler_types.jl")
-include("mean.jl")
+include("angleaxis_types.jl")
+# TODO: Add method `mean_rotation` instead of `mean`
+# include("mean.jl")
 include("derivatives.jl")
 include("principal_value.jl")
 
+include("rodrigues_params.jl")
+include("error_maps.jl")
+include("rotation_error.jl")
+include("log.jl")
+include("eigen.jl")
+include("deprecated.jl")
 
 export
     Rotation, RotMatrix, RotMatrix2, RotMatrix3,
     Angle2d,
-    Quat, SPQuat,
-    AngleAxis, RodriguesVec,
+    Quat, UnitQuaternion,
+    AngleAxis, RodriguesVec, RotationVec, RodriguesParam, MRP,
     RotX, RotY, RotZ,
     RotXY, RotYX, RotZX, RotXZ, RotYZ, RotZY,
     RotXYX, RotYXY, RotZXZ, RotXZX, RotYZY, RotZYZ,
     RotXYZ, RotYXZ, RotZXY, RotXZY, RotYZX, RotZYX,
+
+    # Quaternion math ops
+    logm, expm, ⊖, ⊕,
+
+    # Quaternion maps
+    ExponentialMap, QuatVecMap, CayleyMap, MRPMap, IdentityMap,
 
     # check validity of the rotation (is it close to unitary?)
     isrotation,
