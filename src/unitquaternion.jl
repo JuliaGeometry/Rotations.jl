@@ -95,7 +95,7 @@ function (::Type{Q})(t::NTuple{9}) where Q<:UnitQuaternion
         b = t[7] + t[3]
         c = t[6] + t[8]
     end
-    return Q(a, b, c, d)
+    return principal_value(Q(a, b, c, d))
 end
 
 
