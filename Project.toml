@@ -10,6 +10,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
+Quaternions = "0.4"
 StaticArrays = "0.10, 0.11, 0.12, 1.0"
 julia = "0.7, 1"
 
@@ -17,9 +18,9 @@ julia = "0.7, 1"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+Quaternions = "94ee1d12-ae83-5a48-8b1c-48b8ff168ae0"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-Quaternions = "94ee1d12-ae83-5a48-8b1c-48b8ff168ae0"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [targets]
