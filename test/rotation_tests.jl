@@ -470,7 +470,7 @@ all_types = (RotMatrix{3}, AngleAxis, RotationVec,
         rxyz = RotXYZ(1.0, 2.0, 3.0)
         show(io, MIME("text/plain"), rxyz)
         str = String(take!(io))
-        @test startswith(str, "3×3 RotXYZ{Float64}") && occursin("(1.0, 2.0, 3.0):", str)
+        @test startswith(str, "3×3 RotXYZ{Float64,") && occursin("(1.0, 2.0, 3.0):", str)
     end
 
     #########################################################################
