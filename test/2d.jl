@@ -19,8 +19,8 @@ using Unitful
         @test eltype(Angle2d(10u"°")) <: Real
         @test eltype(Angle2d(20u"rad")) <: Real
 
-				# Check exactitude of degree rotations
-				@test Angle2d(360u"°") == [1 0;0 1]
+        # Check exactitude of degree rotations
+        @test Angle2d(360u"°") == [1 0;0 1]
     end
 
     ###############################
