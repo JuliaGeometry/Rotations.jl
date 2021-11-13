@@ -160,7 +160,7 @@ of `getindex` etc. are computed on the fly.
 """
 struct Angle2d{T,A} <: Rotation{2,T}
     theta::A
-		Angle2d{T,A}(theta::Number) where{T,A} = new{T,A}(theta)
+    Angle2d{T,A}(theta::Number) where{T,A} = new{T,A}(theta)
     Angle2d{T}(theta::A) where {T,A} = new{T,A}(theta)
 end
 
