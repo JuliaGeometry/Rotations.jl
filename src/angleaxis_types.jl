@@ -1,7 +1,7 @@
 ################################################################################
 ################################################################################
 """
-    struct AngleAxis{T} <: Rotation{3,T}
+    struct AngleAxis{T,A} <: Rotation{3,T}
     AngleAxis(Θ, x, y, z)
 
 A 3×3 rotation matrix parameterized by a 3D rotation by angle θ about an
@@ -20,19 +20,19 @@ represent a normalized rotation axis. Operations on an `AngleAxis` with a rotati
 axis that does not have unit norm, created by skipping renormalization in this fashion,
 are not guaranteed to do anything sensible.
 """
-struct AngleAxis{T} <: Rotation{3,T}
-    theta::T
+struct AngleAxis{T,A} <: Rotation{3,T}
+    theta::A
     axis_x::T
     axis_y::T
     axis_z::T
 
-    @inline function AngleAxis{T}(θ, x, y, z, normalize::Bool = true) where {T}
+    @inline function AngleAxis{T}(θ::A, x, y, z, normalize::Bool = true) where {T,A}
         if normalize
             # Not sure what to do with theta?? Should it become theta * norm ?
             norm = sqrt(x*x + y*y + z*z)
-            new(θ, x/norm, y/norm, z/norm)
+            new{T,A}(θ, x/norm, y/norm, z/norm)
         else
-            new(θ, x, y, z)
+            new{T,A}(θ, x, y, z)
         end
     end
 end
@@ -42,7 +42,7 @@ params(aa::AngleAxis) = SVector{4}(aa.theta, aa.axis_x, aa.axis_y, aa.axis_z)
 # StaticArrays will take over *all* the constructors and put everything in a tuple...
 # but this isn't quite what we mean when we have 4 inputs (not 9).
 @inline function AngleAxis(θ::Θ, x::X, y::Y, z::Z, normalize::Bool = true) where {Θ,X,Y,Z}
-    AngleAxis{promote_type(promote_type(promote_type(Θ, X), Y), Z)}(θ, x, y, z, normalize)
+    AngleAxis{reduce(promote_type, (rot_eltype(Θ),X,Y,Z,))}(θ, x, y, z, normalize)
 end
 
 # These functions are enough to satisfy the entire StaticArrays interface:
