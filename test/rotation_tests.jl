@@ -491,4 +491,16 @@ all_types = (RotMatrix{3}, AngleAxis, RotationVec,
         @test Rotations.params(MRP(p1,p2,p3)) == [p1,p2,p3]
         @test Rotations.params(RodriguesParam(p1,p2,p3)) == [p1,p2,p3]
     end
+
+		@testset "Exact rotations in degrees" begin
+			using Unitful: °
+			hascoeffs(m, l...) = all(l) do ((i,j),y) m[i,j] == y end
+			@test hascoeffs(RotX(30°), (1,1)=>1, (2,3)=>-1/2, (3,2)=>1/2)
+			@test hascoeffs(RotX(60°), (1,1)=>1, (2,2)=>1/2, (3,3)=>1/2)
+			@test hascoeffs(RotXY(90°,60°), (1,1)=>1/2,(2,3)=>-1/2,(3,2)=>1)
+			@test hascoeffs(RotXYZ(30°,60°,90°),
+				(1,2)=>-1/2,(2,3)=>-1/4,(3,1)=>1/2)
+			# FIXME: this should also have (3,2)=>3/4, but exactness here is as
+			# a *product* of trigonometric functions simplifying √3...
+		end
 end
