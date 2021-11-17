@@ -154,17 +154,18 @@ Base.inv(r::RotMatrix) = RotMatrix(r.mat')
 end
 
 """
-    struct Angle2d{T} <: Rotation{2,T}
-        theta::T
+    struct Angle2d{T,A} <: Rotation{2,T}
+        theta::A
     end
 
 A 2×2 rotation matrix parameterized by a 2D rotation by angle.
 Only the angle is stored inside the `Angle2d` type, values
 of `getindex` etc. are computed on the fly.
 """
-struct Angle2d{T} <: Rotation{2,T}
-    theta::T
-    Angle2d{T}(theta) where T = new{T}(theta)
+struct Angle2d{T,A} <: Rotation{2,T}
+    theta::A
+    Angle2d{T,A}(theta::Number) where{T,A} = new{T,A}(theta)
+    Angle2d{T}(theta::A) where {T,A} = new{T,A}(theta)
 end
 
 @inline function Angle2d(theta)
@@ -175,6 +176,7 @@ params(r::Angle2d) = SVector{1}(r.theta)
 
 Angle2d(r::Rotation{2}) = Angle2d(rotation_angle(r))
 Angle2d{T}(r::Rotation{2}) where {T} = Angle2d{T}(rotation_angle(r))
+Angle2d{T,A}(r::Rotation{2}) where{T,A} = Angle2d{T,A}(rotation_angle(r))
 
 Base.one(::Type{A}) where {A<: Angle2d} = A(0)
 

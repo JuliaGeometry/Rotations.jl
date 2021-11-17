@@ -12,10 +12,12 @@
 for axis in [:X, :Y, :Z]
     RotType = Symbol("Rot" * string(axis))
     @eval begin
-        struct $RotType{T} <: Rotation{3,T}
-            theta::T
-            $RotType{T}(theta) where {T} = new{T}(theta)
-            $RotType{T}(r::$RotType) where {T} = new{T}(r.theta)
+        struct $RotType{T,A} <: Rotation{3,T}
+            theta::A
+            $RotType{T,A}(theta) where{T,A} = new{T,A}(theta)
+            $RotType{T}(theta::A) where {T,A} = new{T,A}(theta)
+            $RotType{T,A}(r::$RotType) where{T,A} = new{T,A}(r.theta)
+            $RotType{T}(r::$RotType) where {T} = $RotType{T}(r.theta)
         end
 
         @inline function $RotType(theta)
@@ -220,11 +222,13 @@ for axis1 in [:X, :Y, :Z]
         InvRotType = Symbol("Rot" * string(axis2) * string(axis1))
 
         @eval begin
-            struct $RotType{T} <: Rotation{3,T}
-                theta1::T
-                theta2::T
-                $RotType{T}(theta1, theta2) where {T} = new{T}(theta1, theta2)
-                $RotType{T}(r::$RotType) where {T} = new{T}(r.theta1, r.theta2)
+            struct $RotType{T,A} <: Rotation{3,T}
+                theta1::A
+                theta2::A
+                $RotType{T,A}(theta1,theta2) where{T,A} = new{T,A}(theta1, theta2)
+                $RotType{T}(theta1::A, theta2::A) where {T,A} = new{T,A}(theta1, theta2)
+                $RotType{T,A}(r::$RotType) where{T,A} = new{T,A}(r.theta1, r.theta2)
+                $RotType{T}(r::$RotType) where {T} = $RotType{T}(r.theta1, r.theta2)
             end
 
             @inline function $RotType(theta1, theta2)
@@ -513,12 +517,14 @@ for axis1 in [:X, :Y, :Z]
             Rot0Type = Symbol("Rot" * string(axis0))
 
             @eval begin
-                struct $RotType{T} <: Rotation{3,T}
-                    theta1::T
-                    theta2::T
-                    theta3::T
-                    $RotType{T}(theta1, theta2, theta3) where {T} = new{T}(theta1, theta2, theta3)
-                    $RotType{T}(r::$RotType) where {T} = new{T}(r.theta1, r.theta2, r.theta3)
+                struct $RotType{T,A} <: Rotation{3,T}
+                    theta1::A
+                    theta2::A
+                    theta3::A
+                    $RotType{T,A}(theta1,theta2,theta3) where{T,A} = new{T,A}(theta1, theta2, theta3)
+                    $RotType{T}(theta1::A, theta2::A, theta3::A) where {T,A} = new{T,A}(theta1, theta2, theta3)
+                    $RotType{T,A}(r::$RotType) where{T,A} = new{T,A}(r.theta1, r.theta2, r.theta3)
+                    $RotType{T}(r::$RotType) where {T} = $RotType{T}(r.theta1, r.theta2, r.theta3)
                 end
 
                 @inline function $RotType(theta1, theta2, theta3)
