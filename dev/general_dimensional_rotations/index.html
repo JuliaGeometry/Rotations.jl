@@ -4,27 +4,27 @@
  0  1  0  0
  0  0  1  0
  0  0  0  1</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; m = @SMatrix rand(4,4)</code><code class="nohighlight hljs ansi" style="display:block;">4×4 StaticArrays.SMatrix{4, 4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
- 0.932551   0.924592  0.630555  0.218277
- 0.0710074  0.46812   0.900196  0.815367
- 0.677356   0.909672  0.311528  0.127843
- 0.146705   0.224988  0.754128  0.163925</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; r2 = nearest_rotation(m)  # nearest rotation matrix from given matrix</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
-  0.966009    0.0647138    0.213192    0.131103
- -0.2166      0.176904     0.387583    0.87839
- -0.0248893   0.982097    -0.0822457  -0.167637
- -0.138895   -0.00177846   0.893064   -0.42795</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; r3 = rand(RotMatrix{4})  # random rotation in SO(4)</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
-  0.445127  -0.501926   0.557369  -0.489155
- -0.50087   -0.775167  -0.37493   -0.0875973
-  0.704189  -0.111729  -0.699904  -0.0420546
-  0.234752  -0.36702    0.242698   0.866767</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; r1*r2/r3  # multiplication and division</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
-  0.452212  -0.625425   0.518296    0.368399
- -0.398849  -0.250903  -0.480504    0.739651
- -0.467859  -0.703302  -0.0626417  -0.531555
-  0.646167  -0.226402  -0.704671   -0.186141</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; s = log(r2)  # logarithm of RotMatrix is a RotMatrixGenerator</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrixGenerator{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
-  0.0         0.106424   0.0958344   0.241471
- -0.106424    0.0       -0.87353     1.34643
- -0.0958344   0.87353    0.0        -1.62444
- -0.241471   -1.34643    1.62444     0.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; exp(s)  # exponential of RotMatrixGenerator is a RotMatrix</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
-  0.966009    0.0647138    0.213192    0.131103
- -0.2166      0.176904     0.387583    0.87839
- -0.0248893   0.982097    -0.0822457  -0.167637
- -0.138895   -0.00177846   0.893064   -0.42795</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../3d_rotation_generator/">« 3D Rotation Generators</a><a class="docs-footer-nextpage" href="../functions/">Common Methods for Rotations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.12 on <span class="colophon-date" title="Tuesday 22 February 2022 07:54">Tuesday 22 February 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 0.32849   0.0711581  0.5921     0.294504
+ 0.389393  0.021477   0.108573   0.812707
+ 0.930488  0.504056   0.0626124  0.183701
+ 0.665665  0.628086   0.677647   0.575474</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; r2 = nearest_rotation(m)  # nearest rotation matrix from given matrix</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
+  0.342577    -0.488279   0.802241  -0.0251971
+  0.184217    -0.263117  -0.209805   0.92348
+  0.921239     0.238394  -0.253744  -0.173495
+ -0.00485995   0.797196   0.498002   0.341247</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; r3 = rand(RotMatrix{4})  # random rotation in SO(4)</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
+ -0.229517   0.614374  -0.614188  -0.438907
+ -0.556277  -0.152643   0.510745  -0.637491
+ -0.182088   0.734599   0.518283   0.398234
+ -0.777638  -0.244148  -0.305441   0.492317</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; r1*r2/r3  # multiplication and division</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
+ -0.860281    0.309768   -0.015315   -0.404631
+ -0.480395   -0.758179    0.0321934   0.439714
+  0.167018   -0.567851   -0.193225   -0.782505
+  0.0352496  -0.0821726   0.980507   -0.174963</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; s = log(r2)  # logarithm of RotMatrix is a RotMatrixGenerator</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrixGenerator{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
+  0.0       -1.35741  -0.22681   0.726383
+  1.35741    0.0      -1.67085   0.26763
+  0.22681    1.67085   0.0      -1.35181
+ -0.726383  -0.26763   1.35181   0.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; exp(s)  # exponential of RotMatrixGenerator is a RotMatrix</code><code class="nohighlight hljs ansi" style="display:block;">4×4 RotMatrix{4, Float64, 16} with indices SOneTo(4)×SOneTo(4):
+  0.342577    -0.488279   0.802241  -0.0251971
+  0.184217    -0.263117  -0.209805   0.92348
+  0.921239     0.238394  -0.253744  -0.173495
+ -0.00485995   0.797196   0.498002   0.341247</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../3d_rotation_generator/">« 3D Rotation Generators</a><a class="docs-footer-nextpage" href="../functions/">Common Methods for Rotations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.12 on <span class="colophon-date" title="Thursday 24 February 2022 00:42">Thursday 24 February 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
