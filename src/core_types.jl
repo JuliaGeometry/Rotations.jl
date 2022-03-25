@@ -77,17 +77,17 @@ RotMatrix(x::SMatrix{N,N,T,L}) where {N,T,L} = RotMatrix{N,T,L}(x)
 Base.zero(::Type{RotMatrix}) = error("The dimension of rotation is not specified.")
 
 # These functions (plus size) are enough to satisfy the entire StaticArrays interface:
-@inline function RotMatrix(t::NTuple{L}) where L
-    n = sqrt(L)
+@inline function RotMatrix(t::Tuple)
+    n = sqrt(length(t))
     if !isinteger(n)
         throw(DimensionMismatch("The length of input tuple $(t) must be square number."))
     end
     N = Int(n)
     RotMatrix(SMatrix{N,N}(t))
 end
-@inline (::Type{RotMatrix{N}})(t::NTuple) where N = RotMatrix(SMatrix{N,N}(t))
-@inline RotMatrix{N,T}(t::NTuple) where {N,T} = RotMatrix(SMatrix{N,N,T}(t))
-@inline RotMatrix{N,T,L}(t::NTuple{L}) where {N,T,L} = RotMatrix(SMatrix{N,N,T}(t))
+@inline (::Type{RotMatrix{N}})(t::Tuple) where N = RotMatrix(SMatrix{N,N}(t))
+@inline RotMatrix{N,T}(t::Tuple) where {N,T} = RotMatrix(SMatrix{N,N,T}(t))
+@inline RotMatrix{N,T,L}(t::Tuple) where {N,T,L} = RotMatrix(SMatrix{N,N,T}(t))
 
 # Create aliases RotMatrix2{T} = RotMatrix{2,T,4} and RotMatrix3{T} = RotMatrix{3,T,9}
 for N = 2:3
@@ -95,7 +95,7 @@ for N = 2:3
     RotMatrixN = Symbol(:RotMatrix, N)
     @eval begin
         const $RotMatrixN{T} = RotMatrix{$N, T, $L}
-        @inline $RotMatrixN(t::NTuple{$L}) = RotMatrix(SMatrix{$N,$N}(t))
+        @inline $RotMatrixN(t::Tuple) = RotMatrix(SMatrix{$N,$N}(t))
     end
 end
 
@@ -152,7 +152,7 @@ params(r::Angle2d) = SVector{1}(r.theta)
 
 Angle2d(r::Rotation{2}) = Angle2d(rotation_angle(r))
 Angle2d{T}(r::Rotation{2}) where {T} = Angle2d{T}(rotation_angle(r))
-@inline (::Type{R})(t::NTuple{4}) where R<:Angle2d = convert(R, RotMatrix(t))
+@inline (::Type{R})(t::Tuple) where R<:Angle2d = convert(R, RotMatrix2(t))
 
 Base.one(::Type{A}) where {A<: Angle2d} = A(0)
 
