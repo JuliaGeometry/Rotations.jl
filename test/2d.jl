@@ -11,7 +11,10 @@ using Unitful
         @test RotMatrix((1,0,0,1)) == RotMatrix(@SMatrix [1 0;0 1]) == one(SMatrix{2,2})
         @test Angle2d((1,0,0,1))   == RotMatrix(@SMatrix [1 0;0 1]) == one(SMatrix{2,2})
         @test RotMatrix((1,0,0,1)) isa RotMatrix2{Int}
+        @test RotMatrix((1.,0,0,1)) isa RotMatrix2{Float64}
+        @test RotMatrix2((1f0,0,0,1)) isa RotMatrix2{Float32}
         @test Angle2d((1,0,0,1))   isa Angle2d{Float64}
+        @test Angle2d((1f0,0,0,1))   isa Angle2d{Float32}
         @test RotMatrix{2,Float32}((1,0,0,1)) isa RotMatrix2{Float32}
         @test Angle2d{Float32}((1,0,0,1))   isa Angle2d{Float32}
         @test_throws DimensionMismatch RotMatrix((1,0,0,1,0))
