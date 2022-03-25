@@ -85,9 +85,9 @@ Base.zero(::Type{RotMatrix}) = error("The dimension of rotation is not specified
     N = Int(n)
     RotMatrix(SMatrix{N,N}(t))
 end
-@inline (::Type{RotMatrix{N}})(t::Tuple) where N = RotMatrix(SMatrix{N,N}(t))
-@inline RotMatrix{N,T}(t::Tuple) where {N,T} = RotMatrix(SMatrix{N,N,T}(t))
-@inline RotMatrix{N,T,L}(t::Tuple) where {N,T,L} = RotMatrix(SMatrix{N,N,T}(t))
+@inline (::Type{RotMatrix{N}})(t::Tuple) where N = RotMatrix(SArray{Tuple{N,N}}(t))
+@inline RotMatrix{N,T}(t::Tuple) where {N,T} = RotMatrix(SArray{Tuple{N,N},T}(t))
+@inline RotMatrix{N,T,L}(t::Tuple) where {N,T,L} = RotMatrix(SArray{Tuple{N,N},T}(t))
 
 # Create aliases RotMatrix2{T} = RotMatrix{2,T,4} and RotMatrix3{T} = RotMatrix{3,T,9}
 for N = 2:3
@@ -95,7 +95,7 @@ for N = 2:3
     RotMatrixN = Symbol(:RotMatrix, N)
     @eval begin
         const $RotMatrixN{T} = RotMatrix{$N, T, $L}
-        @inline $RotMatrixN(t::Tuple) = RotMatrix(SMatrix{$N,$N}(t))
+        @inline $RotMatrixN(t::Tuple) = RotMatrix(SArray{Tuple{$N,$N}}(t))
     end
 end
 
