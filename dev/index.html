@@ -5,7 +5,7 @@
  -0.681243  -0.642873    0.350175
   0.605127  -0.763718   -0.224845</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Get an angle and an axis of the rotation
        rotation_angle(R_euler), rotation_axis(R_euler)</code><code class="nohighlight hljs ansi" style="display:block;">(2.386003742640557, [-0.8122105149361277, 0.22178973672199065, -0.5395585159294407])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Convert the rotation to unit quaternion
-       R_quat = QuatRotation(R_euler)</code><code class="nohighlight hljs ansi" style="display:block;">3×3 QuatRotation{Float64} with indices SOneTo(3)×SOneTo(3)(QuaternionF64(0.368871, -0.754934, 0.206149, -0.501509, false)):
+       R_quat = QuatRotation(R_euler)</code><code class="nohighlight hljs ansi" style="display:block;">3×3 QuatRotation{Float64} with indices SOneTo(3)×SOneTo(3)(QuaternionF64(0.368871, -0.754934, 0.206149, -0.501509)):
   0.411982   0.0587266   0.909297
  -0.681243  -0.642873    0.350175
   0.605127  -0.763718   -0.224845</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Get quaternion parameters of the rotation
