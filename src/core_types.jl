@@ -216,7 +216,8 @@ function isrotation(r::StaticMatrix{N,N,T}, tol::Real = 1000 * _isrotation_eps(e
 end
 
 function isrotation(r::AbstractMatrix{T}, tol::Real = 1000 * _isrotation_eps(eltype(T))) where T<:Real
-    if !=(size(r)...)
+    s = size(r)
+    if s[1] != s[2]
         return false
     end
     d = norm(r*r'-one(r))

@@ -17,6 +17,13 @@ import Rotations: vmat, rmult, lmult, hmat, tmat
     @test QuatRotation(1, 0, 0, 0) isa QuatRotation{Float64}
     @test QuatRotation(1.0f0, 0, 0, 0) isa QuatRotation{Float32}
 
+    # indexing
+    qi = QuatRotation(1, 0, 0, 0)
+    @test qi[1] == 1.0
+    @test qi[6] == 0.0
+    @test qi[5] == 1.0
+    @test_throws BoundsError q1[10]
+
     q = normalize(@SVector rand(4))
     q32 = SVector{4,Float32}(q)
     @test QuatRotation(q) isa QuatRotation{Float64}

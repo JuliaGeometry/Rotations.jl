@@ -173,7 +173,7 @@ function Base.getindex(q::QuatRotation, i::Int)
 
         ww - xx - yy + zz
     else
-        throw(BoundsError(r,i))
+        throw(BoundsError(q,i))
     end
 end
 
