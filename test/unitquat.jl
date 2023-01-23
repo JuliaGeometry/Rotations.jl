@@ -22,7 +22,7 @@ import Rotations: vmat, rmult, lmult, hmat, tmat
     @test qi[1] == 1.0
     @test qi[6] == 0.0
     @test qi[5] == 1.0
-    @test_throws BoundsError q1[10]
+    @test_throws BoundsError qi[10]
 
     q = normalize(@SVector rand(4))
     q32 = SVector{4,Float32}(q)
