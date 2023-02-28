@@ -53,7 +53,7 @@ export
     RotationVecGenerator,
 
     # Quaternion math ops
-    logm, expm, ⊖, ⊕,
+    logm, expm, ⊖, ⊕, slerp,
 
     # Quaternion maps
     ExponentialMap, QuatVecMap, CayleyMap, MRPMap, IdentityMap,

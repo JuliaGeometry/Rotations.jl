@@ -246,6 +246,20 @@ all_types = (RotMatrix3, RotMatrix{3}, AngleAxis, RotationVec,
         end
     end
 
+    @testset "Slerp rotations" begin
+        repeats = 100
+        @testset "slerp($(R1), $(R2), rand())" for R1 in rot_types, R2 in rot_types
+            Random.seed!(0)
+            for i in 1:repeats
+                r1 = rand(R1)
+                q1 = QuatRotation(r1)
+                r2 = rand(R2)
+                q2 = QuatRotation(r2)
+                t = rand()
+                @test slerp(r1, r2, t) ≈ slerp(q1, q2, t)
+            end
+        end
+    end
 
     #########################################################################
     # Test conversions between rotation types

@@ -328,6 +328,14 @@ function rotation_between(from::SVector{3}, to::SVector{3})
     @inbounds return QuatRotation(w, v[1], v[2], v[3]) # relies on normalization in constructor
 end
 
+"""
+    slerp(R1::Rotaion{3}, R2::Rotaion{3}, t::Real)
+
+Perform spherical linear interpolation (Slerp) between rotations `R1` and `R2`.
+"""
+Quaternions.slerp(q1::QuatRotation, q2::QuatRotation, t::Real) = QuatRotation(slerp(q1.q, q2.q, t))
+Quaternions.slerp(r1::Rotation{3}, r2::Rotation{3}, t::Real) = typeof(r1)(slerp(QuatRotation(r1), QuatRotation(r2), t))
+
 # ~~~~~~~~~~~~~~~ Kinematics ~~~~~~~~~~~~~~~ $
 """
     kinematics(R::Rotation{3}, ω::AbstractVector)
