@@ -30,6 +30,9 @@ for axis in [:X, :Y, :Z]
 
         @inline Base.inv(r::$RotType) = $RotType(-r.theta)
 
+        # specialized slerp for single axis rotations
+        Quaternions.slerp(r1::$RotType, r2::$RotType, t::Real) = $RotType(r1.theta + (mod2pi(r2.theta - r1.theta + π) - π) * t)
+
         # define identity rotations for convenience
         @inline Base.one(::Type{$RotType}) = $RotType(0.0)
         @inline Base.one(::Type{$RotType{T}}) where {T} = $RotType{T}(zero(T))
