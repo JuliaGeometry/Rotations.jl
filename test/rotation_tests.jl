@@ -248,7 +248,7 @@ all_types = (RotMatrix3, RotMatrix{3}, AngleAxis, RotationVec,
 
     @testset "Slerp rotations" begin
         repeats = 100
-        @testset "slerp($(R1), $(R2), rand())" for R1 in rot_types, R2 in rot_types
+        @testset "slerp($(R1), $(R2), rand())" for R1 in all_types, R2 in all_types
             Random.seed!(0)
             for i in 1:repeats
                 r1 = rand(R1)
