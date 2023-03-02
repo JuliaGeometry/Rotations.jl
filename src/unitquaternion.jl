@@ -334,7 +334,7 @@ end
 Perform spherical linear interpolation (Slerp) between rotations `R1` and `R2`.
 """
 Quaternions.slerp(q1::QuatRotation, q2::QuatRotation, t::Real) = QuatRotation(slerp(q1.q, q2.q, t))
-Quaternions.slerp(r1::Rotation{3}, r2::Rotation{3}, t::Real) = typeof(r1)(slerp(QuatRotation(r1), QuatRotation(r2), t))
+Quaternions.slerp(r1::Rotation{3}, r2::Rotation{3}, t::Real) = slerp(QuatRotation(r1), QuatRotation(r2), t)
 Quaternions.slerp(r1::RotX, r2::RotX, t::Real) = RotX(r1.theta + (mod2pi(r2.theta - r1.theta + π) - π) * t)
 Quaternions.slerp(r1::RotY, r2::RotY, t::Real) = RotY(r1.theta + (mod2pi(r2.theta - r1.theta + π) - π) * t)
 Quaternions.slerp(r1::RotZ, r2::RotZ, t::Real) = RotZ(r1.theta + (mod2pi(r2.theta - r1.theta + π) - π) * t)
