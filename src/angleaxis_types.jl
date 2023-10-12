@@ -174,10 +174,16 @@ end
 
 @inline function (::Type{Q})(rv::RotationVec) where Q <: QuatRotation
     theta = rotation_angle(rv)
-    ϕ = theta / (2π)
-    sc = sinc(ϕ) / 2    # this form gracefully handles theta = 0
-    c = cos(theta / 2)
-    return Q(c, sc * rv.sx, sc * rv.sy, sc * rv.sz, false)
+    if theta < sqrt(eps(typeof(theta)))
+        ϕ = theta / (2π)
+        sc = sinc(ϕ) / 2    # this form gracefully handles theta = 0
+        qx, qy, qz = sc * rv.sx, sc * rv.sy, sc * rv.sz
+        return Q(cos(theta / 2), qx, qy, qz, false)
+    else
+        s, c = sincos(theta / 2)
+        sθ = s / theta
+        return Q(c, sθ * rv.sx, sθ * rv.sy, sθ * rv.sz, false)
+    end
 end
 
 (::Type{RV})(q::QuatRotation) where {RV <: RotationVec} = RV(AngleAxis(q))
