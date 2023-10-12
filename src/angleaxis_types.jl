@@ -172,23 +172,17 @@ function (::Type{RV})(aa::AngleAxis) where RV <: RotationVec
     return RV(aa.theta * aa.axis_x, aa.theta * aa.axis_y, aa.theta * aa.axis_z)
 end
 
-function (::Type{Q})(rv::RotationVec) where Q <: QuatRotation
-    return QuatRotation(AngleAxis(rv))
+@inline function (::Type{Q})(rv::RotationVec) where Q <: QuatRotation
+    theta = rotation_angle(rv)
+    ϕ = theta / (2π)
+    sc = sinc(ϕ) / 2    # this form gracefully handles theta = 0
+    c = cos(theta / 2)
+    return Q(c, sc * rv.sx, sc * rv.sy, sc * rv.sz, false)
 end
 
 (::Type{RV})(q::QuatRotation) where {RV <: RotationVec} = RV(AngleAxis(q))
 
-function Base.:*(rv::RotationVec{T1}, v::StaticVector{3, T2}) where {T1,T2}
-    theta = rotation_angle(rv)
-    if (theta > eps(T1)) # use eps here because we have the 1st order series expansion defined
-        return AngleAxis(rv) * v
-    else
-        return similar_type(typeof(v), promote_type(T1,T2))(
-                    v[1] + rv.sy * v[3] - rv.sz * v[2],
-                    v[2] + rv.sz * v[1] - rv.sx * v[3],
-                    v[3] + rv.sx * v[2] - rv.sy * v[1])
-    end
-end
+Base.:*(rv::RotationVec, v::StaticVector{3}) = QuatRotation(rv) * v
 
 @inline Base.:*(rv::RotationVec, r::Rotation) = QuatRotation(rv) * r
 @inline Base.:*(rv::RotationVec, r::RotMatrix) = QuatRotation(rv) * r
@@ -203,7 +197,7 @@ end
 @inline Base.inv(rv::RotationVec) = RotationVec(-rv.sx, -rv.sy, -rv.sz)
 
 # rotation properties
-@inline rotation_angle(rv::RotationVec) = sqrt(rv.sx * rv.sx + rv.sy * rv.sy + rv.sz * rv.sz)
+@inline rotation_angle(rv::RotationVec) = hypot(rv.sx, rv.sy, rv.sz)
 function rotation_axis(rv::RotationVec)     # what should this return for theta = 0?
     theta = rotation_angle(rv)
     return (theta > 0 ? SVector(rv.sx / theta, rv.sy / theta, rv.sz / theta) : SVector(one(theta), zero(theta), zero(theta)))

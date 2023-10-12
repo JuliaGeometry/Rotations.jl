@@ -180,6 +180,19 @@ using ForwardDiff
                 @test FD_jac ≈ R_jac
             end
         end
+
+        @testset "RotationVec near zero" begin
+            rot(x) = RotationVec(x, 0, 0)
+            for i = 1:10
+                v = randn(SVector{3,Float64})
+                rotv(x) = rot(x)*v
+                drotv(x) = ForwardDiff.derivative(rotv, x)
+                @test drotv(0.0) ≈ [0, -v[3], v[2]]
+                @test drotv(1e-20) ≈ [0, -v[3], v[2]]
+                @test_broken ForwardDiff.derivative(drotv, 0.0) ≈ [0, -v[2], -v[3]]
+                @test ForwardDiff.derivative(drotv, 1e-20) ≈ [0, -v[2], -v[3]]
+            end
+        end
 #=
         # rotate a point by an MRP
         @testset "Jacobian (MRP rotation)" begin
