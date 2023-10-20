@@ -154,8 +154,7 @@ all_types = (RotMatrix3, RotMatrix{3}, AngleAxis, RotationVec,
                 r1 = rand(R)
                 r2 = rand(R)
                 v = @SVector rand(3)
-                @test inv(r1) ≈ adjoint(r1)
-                @test inv(r1) ≈ transpose(r1)
+                @test inv(r1) === adjoint(r1) === transpose(r1)
                 @test inv(r1)*r1 ≈ I
                 @test r1*inv(r1) ≈ I
                 @test r1/r1 ≈ I
