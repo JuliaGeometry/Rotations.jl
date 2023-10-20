@@ -187,7 +187,8 @@ using ForwardDiff
                 v = randn(SVector{3,Float64})
                 rotv(x) = rot(x)*v
                 drotv(x) = ForwardDiff.derivative(rotv, x)
-                @test drotv(0.0) ≈ [0, -v[3], v[2]]
+                # The following broken tests will be fixed by https://github.com/JuliaDiff/ForwardDiff.jl/pull/669
+                @test_broken drotv(0.0) ≈ [0, -v[3], v[2]]
                 @test drotv(1e-20) ≈ [0, -v[3], v[2]]
                 @test_broken ForwardDiff.derivative(drotv, 0.0) ≈ [0, -v[2], -v[3]]
                 @test ForwardDiff.derivative(drotv, 1e-20) ≈ [0, -v[2], -v[3]]
