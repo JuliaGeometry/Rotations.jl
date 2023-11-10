@@ -175,7 +175,7 @@ end
 @inline function (::Type{Q})(rv::RotationVec) where Q <: QuatRotation
     theta = rotation_angle(rv)
     if theta < sqrt(eps(typeof(theta)))
-        ϕ = theta / (2π)
+        ϕ = theta / π / 2
         sc = sinc(ϕ) / 2    # this form gracefully handles theta = 0
         qx, qy, qz = sc * rv.sx, sc * rv.sy, sc * rv.sz
         return Q(cos(theta / 2), qx, qy, qz, false)
