@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Euler Angles · Rotations.jl</title><meta name="title" content="Euler Angles · Rotations.jl"/><meta property="og:title" content="Euler Angles · Rotations.jl"/><meta property="twitter:title" content="Euler Angles · Rotations.jl"/><meta name="description" content="Documentation for Rotations.jl."/><meta property="og:description" content="Documentation for Rotations.jl."/><meta property="twitter:description" content="Documentation for Rotations.jl."/><meta property="og:url" content="https://JuliaGeometry.github.io/Rotations.jl/3d_euler/"/><meta property="twitter:url" content="https://JuliaGeometry.github.io/Rotations.jl/3d_euler/"/><link rel="canonical" href="https://JuliaGeometry.github.io/Rotations.jl/3d_euler/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="Rotations.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Rotations.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../rotation_types/">Rotation Types</a></li><li><span class="tocitem">2D Rotations</span><ul><li><a class="tocitem" href="../2d_matrix/">Matrix</a></li><li><a class="tocitem" href="../2d_angle/">Angle</a></li></ul></li><li><span class="tocitem">3D Rotations</span><ul><li><a class="tocitem" href="../3d_matrix/">Matrix</a></li><li class="is-active"><a class="tocitem" href>Euler Angles</a><ul class="internal"><li><a class="tocitem" href="#Rotation-around-one-axis"><span>Rotation around one axis</span></a></li><li><a class="tocitem" href="#Rotation-around-two-axes"><span>Rotation around two axes</span></a></li><li><a class="tocitem" href="#Rotation-around-three-axes-(Euler-Angles)"><span>Rotation around three axes (Euler Angles)</span></a></li></ul></li><li><a class="tocitem" href="../3d_angleaxis/">Angle and Axis</a></li><li><a class="tocitem" href="../3d_quaternion/">Quaternion and Related Parameters</a></li></ul></li><li><span class="tocitem">Rotation Generators</span><ul><li><a class="tocitem" href="../rotation_generator_types/">Rotation Generator Types</a></li><li><a class="tocitem" href="../2d_rotation_generator/">2D Rotation Generators</a></li><li><a class="tocitem" href="../3d_rotation_generator/">3D Rotation Generators</a></li></ul></li><li><a class="tocitem" href="../general_dimensional_rotations/">General Dimensional Rotations</a></li><li><a class="tocitem" href="../functions/">Common Methods for Rotations</a></li><li><a class="tocitem" href="../visualizing/">Visualizing Rotations</a></li><li><a class="tocitem" href="../functionreference/">Function Reference</a></li><li><a class="tocitem" href="../reference/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">3D Rotations</a></li><li class="is-active"><a href>Euler Angles</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Euler Angles</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaGeometry/Rotations.jl/blob/master/docs/src/3d_euler.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="3D-Rotation-with-Euler-Angles"><a class="docs-heading-anchor" href="#3D-Rotation-with-Euler-Angles">3D Rotation with Euler Angles</a><a id="3D-Rotation-with-Euler-Angles-1"></a><a class="docs-heading-anchor-permalink" href="#3D-Rotation-with-Euler-Angles" title="Permalink"></a></h1><p><a href="https://en.wikipedia.org/wiki/Euler_angles">Euler angles</a> are a way to represent a rotation matrix with three rotations around cardinal axes.</p><p>In Rotations.jl, there are 12 concrete types for Euler angles.</p><ul><li>Proper Euler angles<ul><li><code>RotZXZ</code>, <code>RotXYX</code>, <code>RotYZY</code>, <code>RotZYZ</code>, <code>RotXZX</code>, <code>RotYXY</code></li></ul></li><li>Tait–Bryan angles<ul><li><code>RotXYZ</code>, <code>RotYZX</code>, <code>RotZXY</code>, <code>RotXZY</code>, <code>RotZYX</code>, <code>RotYXZ</code></li></ul></li></ul><p>In addition, Rotations.jl provides concrete types that represent rotations in one or two axes.</p><ul><li>one axis<ul><li><code>RotX</code>, <code>RotY</code>, <code>RotZ</code></li></ul></li><li>two axes<ul><li><code>RotXY</code>, <code>RotYZ</code>, <code>RotZX</code>, <code>RotXZ</code>, <code>RotZY</code>, <code>RotYX</code></li></ul></li></ul><h2 id="Rotation-around-one-axis"><a class="docs-heading-anchor" href="#Rotation-around-one-axis">Rotation around one axis</a><a id="Rotation-around-one-axis-1"></a><a class="docs-heading-anchor-permalink" href="#Rotation-around-one-axis" title="Permalink"></a></h2><p class="math-container">\[\begin{aligned}
+R_{x}(\alpha)
+&amp;= \begin{pmatrix}
+1 &amp; 0 &amp; 0 \\
+0 &amp; \cos(\alpha) &amp; -\sin(\alpha) \\
+0 &amp; \sin(\alpha) &amp; \cos(\alpha) \\
+\end{pmatrix}, \\
+R_{y}(\alpha)
+&amp;= \begin{pmatrix}
+\cos(\alpha) &amp; 0 &amp; \sin(\alpha) \\
+0 &amp; 1 &amp; 0 \\
+-\sin(\alpha) &amp; 0 &amp; \cos(\alpha) \\
+\end{pmatrix}, \\
+R_{z}(\alpha)
+&amp;= \begin{pmatrix}
+\cos(\alpha) &amp; -\sin(\alpha) &amp; 0\\
+\sin(\alpha) &amp; \cos(\alpha) &amp; 0\\
+0 &amp; 0 &amp; 1
+\end{pmatrix}
+\end{aligned}\]</p><p><strong>example</strong></p><p>Here&#39;s an example for <code>RotZ</code>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; α = 1.2  # Rotation angle</code><code class="nohighlight hljs ansi" style="display:block;">1.2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; R = RotZ(α)</code><code class="nohighlight hljs ansi" style="display:block;">3×3 RotZ{Float64} with indices SOneTo(3)×SOneTo(3)(1.2):
+ 0.362358  -0.932039  0.0
+ 0.932039   0.362358  0.0
+ 0.0        0.0       1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Q = [cos(α) -sin(α) 0
+             sin(α)  cos(α) 0
+             0       0      1]
+       # These matrices are equal</code><code class="nohighlight hljs ansi" style="display:block;">3×3 Matrix{Float64}:
+ 0.362358  -0.932039  0.0
+ 0.932039   0.362358  0.0
+ 0.0        0.0       1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; R == Q</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre><p>And more examples for <code>RotX</code> and <code>RotY</code>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # These matrices are equal
+       RotX(α) == [1 0       0
+                   0 cos(α) -sin(α)
+                   0 sin(α)  cos(α)]
+       # These matrices are equal</code><code class="nohighlight hljs ansi" style="display:block;">true</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; RotY(α) == [cos(α) 0 sin(α)
+                   0      1 0
+                  -sin(α) 0 cos(α)]</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre><h2 id="Rotation-around-two-axes"><a class="docs-heading-anchor" href="#Rotation-around-two-axes">Rotation around two axes</a><a id="Rotation-around-two-axes-1"></a><a class="docs-heading-anchor-permalink" href="#Rotation-around-two-axes" title="Permalink"></a></h2><p class="math-container">\[\begin{aligned}
+R_{xy}(\alpha,\beta)
+&amp;= R_{x}(\alpha)R_{y}(\beta),
+&amp; R_{yx}(\alpha,\beta)
+&amp;= R_{y}(\alpha)R_{x}(\beta), \\
+%
+R_{yz}(\alpha,\beta)
+&amp;= R_{y}(\alpha)R_{z}(\beta),
+&amp; R_{zy}(\alpha,\beta)
+&amp;= R_{z}(\alpha)R_{y}(\beta), \\
+%
+R_{zx}(\alpha,\beta)
+&amp;= R_{z}(\alpha)R_{x}(\beta),
+&amp; R_{xz}(\alpha,\beta)
+&amp;= R_{x}(\alpha)R_{z}(\beta)
+\end{aligned}\]</p><p><strong>example</strong></p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; α, β = 1.2, 4.7  # Rotation angles</code><code class="nohighlight hljs ansi" style="display:block;">(1.2, 4.7)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; RotX(α) * RotY(β)</code><code class="nohighlight hljs ansi" style="display:block;">3×3 RotXY{Float64} with indices SOneTo(3)×SOneTo(3)(1.2, 4.7):
+ -0.0123887  0.0       -0.999923
+ -0.931968   0.362358   0.0115467
+  0.36233    0.932039  -0.00448913</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; RotXY(α, β)
+       # These matrices are equal</code><code class="nohighlight hljs ansi" style="display:block;">3×3 RotXY{Float64} with indices SOneTo(3)×SOneTo(3)(1.2, 4.7):
+ -0.0123887  0.0       -0.999923
+ -0.931968   0.362358   0.0115467
+  0.36233    0.932039  -0.00448913</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; RotX(α) * RotY(β) == RotXY(α, β)</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre><h2 id="Rotation-around-three-axes-(Euler-Angles)"><a class="docs-heading-anchor" href="#Rotation-around-three-axes-(Euler-Angles)">Rotation around three axes (Euler Angles)</a><a id="Rotation-around-three-axes-(Euler-Angles)-1"></a><a class="docs-heading-anchor-permalink" href="#Rotation-around-three-axes-(Euler-Angles)" title="Permalink"></a></h2><p><strong>Proper Euler angles</strong></p><p class="math-container">\[\begin{aligned}
+R_{xyx}(\alpha, \beta, \gamma) &amp;= R_x(\alpha) R_y(\beta) R_x(\gamma),
+&amp; R_{yxy}(\alpha, \beta, \gamma) &amp;= R_y(\alpha) R_x(\beta) R_y(\gamma), \\
+R_{yzy}(\alpha, \beta, \gamma) &amp;= R_y(\alpha) R_z(\beta) R_y(\gamma),
+&amp; R_{zyz}(\alpha, \beta, \gamma) &amp;= R_z(\alpha) R_y(\beta) R_z(\gamma), \\
+R_{zxz}(\alpha, \beta, \gamma) &amp;= R_z(\alpha) R_x(\beta) R_z(\gamma),
+&amp; R_{xzx}(\alpha, \beta, \gamma) &amp;= R_x(\alpha) R_z(\beta) R_x(\gamma)
+\end{aligned}\]</p><p><strong>Tait–Bryan angles</strong></p><p class="math-container">\[\begin{aligned}
+R_{xyz}(\alpha, \beta, \gamma) &amp;= R_x(\alpha) R_y(\beta) R_z(\gamma),
+&amp; R_{yxz}(\alpha, \beta, \gamma) &amp;= R_y(\alpha) R_x(\beta) R_z(\gamma), \\
+R_{yzx}(\alpha, \beta, \gamma) &amp;= R_y(\alpha) R_z(\beta) R_x(\gamma),
+&amp; R_{zyx}(\alpha, \beta, \gamma) &amp;= R_z(\alpha) R_y(\beta) R_x(\gamma), \\
+R_{zxy}(\alpha, \beta, \gamma) &amp;= R_z(\alpha) R_x(\beta) R_y(\gamma),
+&amp; R_{xzy}(\alpha, \beta, \gamma) &amp;= R_x(\alpha) R_z(\beta) R_y(\gamma)
+\end{aligned}\]</p><p><strong>example</strong></p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; α, β, γ = 1.2, 4.7, -0.4  # Rotation angles</code><code class="nohighlight hljs ansi" style="display:block;">(1.2, 4.7, -0.4)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; RotYXZ(α, β, γ)</code><code class="nohighlight hljs ansi" style="display:block;">3×3 RotYXZ{Float64} with indices SOneTo(3)×SOneTo(3)(1.2, 4.7, -0.4):
+  0.696679    -0.71729    -0.0115467
+  0.00482437  -0.0114107   0.999923
+ -0.717367    -0.696681   -0.00448913</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; RotY(α)*RotX(β)*RotZ(γ)
+       # These matrices are equal</code><code class="nohighlight hljs ansi" style="display:block;">3×3 RotYXZ{Float64} with indices SOneTo(3)×SOneTo(3)(1.2, 4.7, -0.4):
+  0.696679    -0.71729    -0.0115467
+  0.00482437  -0.0114107   0.999923
+ -0.717367    -0.696681   -0.00448913</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; RotYXZ(α, β, γ) == RotY(α)*RotX(β)*RotZ(γ)</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../3d_matrix/">« Matrix</a><a class="docs-footer-nextpage" href="../3d_angleaxis/">Angle and Axis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Sunday 4 February 2024 15:29">Sunday 4 February 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
