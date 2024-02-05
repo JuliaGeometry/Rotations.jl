@@ -6,9 +6,6 @@ skew-symmetric real `N`×`N` matrices.
 """
 abstract type RotationGenerator{N,T} <: StaticMatrix{N,N,T} end
 
-Base.@pure StaticArrays.Size(::Type{RotationGenerator{N}}) where {N} = Size(N,N)
-Base.@pure StaticArrays.Size(::Type{RotationGenerator{N,T}}) where {N,T} = Size(N,N)
-Base.@pure StaticArrays.Size(::Type{R}) where {R<:RotationGenerator} = Size(supertype(R))
 Base.adjoint(r::RotationGenerator) = -r
 Base.transpose(r::RotationGenerator{N,T}) where {N,T<:Real} = -r
 Base.real(R::Type{<:RotationGenerator}) = R
