@@ -11,13 +11,26 @@ using ForwardDiff
     @testset "Jacobian checks" begin
 
         # Quaternion to rotation matrix
-        @testset "Jacobian (QuatRotation -> RotMatrix)" begin
+        @testset "Jacobian (Quaternion -> RotMatrix)" begin
             for i in 1:10    # do some repeats
-                q = rand(QuatRotation)  # a random quaternion
+                q = rand(QuaternionF64)  # a random quaternion, **not** normalized
 
                 # test jacobian to a Rotation matrix
                 R_jac = Rotations.jacobian(RotMatrix, q)
-                FD_jac = ForwardDiff.jacobian(x -> SVector{9}(QuatRotation(x[1], x[2], x[3], x[4])),
+                FD_jac = ForwardDiff.jacobian(x -> SVector{9}(QuatRotation(x[1], x[2], x[3], x[4])),  # normalize
+                                              SVector(q.s, q.v1, q.v2, q.v3))
+
+                # compare
+                @test FD_jac ≈ R_jac
+            end
+        end
+        @testset "Jacobian (QuatRotation -> RotMatrix)" begin
+            for i in 1:10    # do some repeats
+                q = rand(QuatRotation)  # a random quaternion (normalized)
+
+                # test jacobian to a Rotation matrix
+                R_jac = Rotations.jacobian(RotMatrix, q)
+                FD_jac = ForwardDiff.jacobian(x -> SVector{9}(QuatRotation(x[1], x[2], x[3], x[4], false)),  # don't normalize
                                               Rotations.params(q))
 
                 # compare

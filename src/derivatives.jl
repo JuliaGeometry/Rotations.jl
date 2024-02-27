@@ -26,53 +26,43 @@ ith_partial{N}(X::SMatrix{9,N}, i) = @SMatrix([X[1,i]   X[4,i]   X[7,i];
     jacobian(::Type{output_param}, R::input_param)
 Returns the jacobian for transforming from the input rotation parameterization
 to the output parameterization, centered at the value of R.
+Note that 
+* if `input_param <: QuatRotation`, a unit quaternion is assumed and 
+  the jacobian is with respect to the four parameters of a unit quaternion.
+* if `input_param <: Quaternion`, a general (with arbitrary norm)
+  quaternion is assumed and the jacobian is with respect to a general quaternion
 
     jacobian(R::rotation_type, X::AbstractVector)
 Returns the jacobian for rotating the vector X by R.
 """
-function jacobian(::Type{RotMatrix},  q::QuatRotation)
-    w = real(q.q)
-    x, y, z = imag_part(q.q)
+function jacobian(::Type{RotMatrix},  q::Quaternion)
+    s = abs(q)
+    w = real(q)
+    x, y, z = imag_part(q)
+    qhat = SVector{4}(w/s, x/s, y/s, z/s)  # unit quaternion
 
-    # let q = s * qhat where qhat is a unit quaternion and  s is a scalar,
-    # then R = RotMatrix(q) = RotMatrix(s * qhat) = s * RotMatrix(qhat)
+    dRdqhat = _jacobian_unit_quat(qhat)
+                        
+    dqhatdq = (I(4) - qhat * qhat') / s  # jacobian of normalization
+    dRdqhat * dqhatdq  # total jacobian
+end
 
-    # get R(q)
-    # R = q[:] # FIXME: broken with StaticArrays 0.4.0 due to https://github.com/JuliaArrays/StaticArrays.jl/issues/128
-    R = SVector(Tuple(q))
 
-    # solve d(s*R)/dQ (because its easy)
-    dsRdQ = @SMatrix [ 2*w   2*x   -2*y   -2*z ;
-                       2*z   2*y    2*x    2*w ;
-                      -2*y   2*z   -2*w    2*x ;
+jacobian(::Type{RotMatrix},  q::QuatRotation) = _jacobian_unit_quat(params(q))
 
-                      -2*z   2*y    2*x   -2*w ;
-                       2*w  -2*x    2*y   -2*z ;
-                       2*x   2*w    2*z    2*y ;
 
-                       2*y   2*z    2*w    2*x ;
-                      -2*x  -2*w    2*z    2*y ;
-                       2*w  -2*x   -2*y    2*z ]
-
-    # get s and dsdQ
-    # s = 1
-    dsdQ = @SVector [2*w, 2*x, 2*y, 2*z]
-
-    # now R(q) = (s*R) / s
-    # so dR/dQ = (s * d(s*R)/dQ - (s*R) * ds/dQ) / s^2
-    #          = (d(s*R)/dQ - R*ds/dQ) / s
-
-    # now R(q) = (R(s*q)) / s   for scalar s, because RotMatrix(s * q) = s * RotMatrix(q)
-    #
-    # so dR/dQ = (dR(s*q)/dQ*s - R(s*q) * ds/dQ) / s^2
-    #          = (dR(s*q)/dQ*s - s*R(q) * ds/dQ) / s^2
-    #          = (dR(s*q)/dQ   - R(q) * ds/dQ) / s
-
-    jac = dsRdQ - R * transpose(dsdQ)
-
-    # now reformat for output.  TODO: is the the best expression?
-    # return Vec{4,Mat{3,3,T}}(ith_partial(jac, 1), ith_partial(jac, 2), ith_partial(jac, 3), ith_partial(jac, 4))
-
+@inline function _jacobian_unit_quat(qhat::SVector{4})
+    # jacobian of vec(RotMatrix(QuatRotation(qhat, false)))
+    w, x, y, z = qhat
+    return @SMatrix [ 2*w   2*x   -2*y   -2*z ;
+                      2*z   2*y    2*x    2*w ;
+                     -2*y   2*z   -2*w    2*x ;
+                     -2*z   2*y    2*x   -2*w ;
+                      2*w  -2*x    2*y   -2*z ;
+                      2*x   2*w    2*z    2*y ;
+                      2*y   2*z    2*w    2*x ;
+                     -2*x  -2*w    2*z    2*y ;
+                      2*w  -2*x   -2*y    2*z ]
 end
 
 
