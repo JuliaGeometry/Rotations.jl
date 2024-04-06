@@ -74,7 +74,7 @@ R(\bm{v})
 ```@repl
 using Rotations, LinearAlgebra
 # 1/3 (120°) rotation around the (1/√3, 1/√3, 1/√3) vector
-R = R = RotationVec(2π/3(√3), 2π/3(√3), 2π/3(√3))
+R = RotationVec(2π/3(√3), 2π/3(√3), 2π/3(√3))
 # This matrix swaps the xyz coordinates
 R * [1,2,3]
 R^2
