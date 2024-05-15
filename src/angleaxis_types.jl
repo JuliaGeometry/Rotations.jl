@@ -110,7 +110,7 @@ function Base.:*(aa::AngleAxis, v::StaticVector)
     st, ct = sincos(aa.theta)
     w_cross_pt = cross(w, v)
     m = dot(v, w) * (one(w_cross_pt[1]) - ct)
-    T = promote_type(eltype(aa), eltype(v))
+    T = Base.promote_op(*, eltype(aa), eltype(v))
     return similar_type(v,T)(v[1] * ct + w_cross_pt[1] * st + w[1] * m,
                              v[2] * ct + w_cross_pt[2] * st + w[2] * m,
                              v[3] * ct + w_cross_pt[3] * st + w[3] * m)
