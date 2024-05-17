@@ -210,10 +210,9 @@ all_types = (RotMatrix3, RotMatrix{3}, AngleAxis, RotationVec,
     end
 
     @testset "Rotation result eltype" begin
+        QuantityF64 = typeof(1.0u"m")
+        QuantityF32 = typeof(1.0f0u"m")
         @testset "$(R)" for R in all_types
-            QuantityF64 = typeof(1.0u"m")
-            QuantityF32 = typeof(1.0f0u"m")
-
             r1 = rand(R{Float64})
             r2 = rand(R{Float32})
             v1 = rand(SVector{3,Float64})
