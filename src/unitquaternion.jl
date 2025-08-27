@@ -335,7 +335,7 @@ where `ω` is the angular velocity. This is equivalent to
 Ṙ = \\lim_{Δt → 0} \\frac{R δR - R}{Δt}
 ```
 
-where ``δR`` is some small rotation, parameterized by a small rotation ``δθ`` about
+where ``δR`` is some small rotation, parametrized by a small rotation ``δθ`` about
 an axis ``r``, such that ``\\lim_{Δt → 0} \\frac{δθ r}{Δt} = ω``
 
 The kinematics are extremely useful when computing the dynamics of rigid bodies, since
@@ -468,7 +468,7 @@ Jacobian of `lmult(q) QuatMap(ϕ)`, when ϕ is near zero.
 
 Useful for converting Jacobians from R⁴ to R³ and
     correctly account for unit norm constraint. Jacobians for different
-    differential quaternion parameterization are the same up to a constant.
+    differential quaternion parametrization are the same up to a constant.
 """
 function ∇differential(q::QuatRotation)
     w = real(q.q)

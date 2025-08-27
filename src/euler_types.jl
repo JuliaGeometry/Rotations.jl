@@ -566,7 +566,7 @@ end
     struct RotXYX{T} <: Rotation{3,T}
     RotXYX(theta1, theta2, theta3)
 
-A 3×3 rotation matrix parameterized by the "proper" XYX Euler angle convention,
+A 3×3 rotation matrix parametrized by the "proper" XYX Euler angle convention,
 consisting of first a rotation about the X axis by `theta3`, followed by a
 rotation about the Y axis by `theta2`, and finally a rotation about the X axis
 by `theta1`.
@@ -617,7 +617,7 @@ end
     struct RotXZX{T} <: Rotation{3,T}
     RotXZX(theta1, theta2, theta3)
 
-A 3×3 rotation matrix parameterized by the "proper" XZX Euler angle convention,
+A 3×3 rotation matrix parametrized by the "proper" XZX Euler angle convention,
 consisting of first a rotation about the X axis by `theta3`, followed by a
 rotation about the Z axis by `theta2`, and finally a rotation about the X axis
 by `theta1`.
@@ -668,7 +668,7 @@ end
     struct RotYXY{T} <: Rotation{3,T}
     RotYXY(theta1, theta2, theta3)
 
-A 3×3 rotation matrix parameterized by the "proper" YXY Euler angle convention,
+A 3×3 rotation matrix parametrized by the "proper" YXY Euler angle convention,
 consisting of first a rotation about the Y axis by `theta3`, followed by a
 rotation about the X axis by `theta2`, and finally a rotation about the Y axis
 by `theta1`.
@@ -719,7 +719,7 @@ end
     struct RotYZY{T} <: Rotation{3,T}
     RotYZY(theta1, theta2, theta3)
 
-A 3×3 rotation matrix parameterized by the "proper" YXY Euler angle convention,
+A 3×3 rotation matrix parametrized by the "proper" YXY Euler angle convention,
 consisting of first a rotation about the Y axis by `theta3`, followed by a
 rotation about the Z axis by `theta2`, and finally a rotation about the Y axis
 by `theta1`.
@@ -770,7 +770,7 @@ end
     struct RotZXZ{T} <: Rotation{3,T}
     RotZXZ(theta1, theta2, theta3)
 
-A 3×3 rotation matrix parameterized by the "proper" ZXZ Euler angle convention,
+A 3×3 rotation matrix parametrized by the "proper" ZXZ Euler angle convention,
 consisting of first a rotation about the Z axis by `theta3`, followed by a
 rotation about the X axis by `theta2`, and finally a rotation about the Z axis
 by `theta1`.
@@ -821,7 +821,7 @@ end
     struct RotZYZ{T} <: Rotation{3,T}
     RotZYZ(theta1, theta2, theta3)
 
-A 3×3 rotation matrix parameterized by the "proper" ZXZ Euler angle convention,
+A 3×3 rotation matrix parametrized by the "proper" ZXZ Euler angle convention,
 consisting of first a rotation about the Z axis by `theta3`, followed by a
 rotation about the Y axis by `theta2`, and finally a rotation about the Z axis
 by `theta1`.
@@ -876,7 +876,7 @@ end
     RotXYZ(theta1, theta2, theta3)
     RotXYZ(roll=r, pitch=p, yaw=y)
 
-A 3×3 rotation matrix parameterized by the "Tait-Bryant" XYZ Euler angle
+A 3×3 rotation matrix parametrized by the "Tait-Bryant" XYZ Euler angle
 convention, consisting of first a rotation about the Z axis by `theta3`,
 followed by a rotation about the Y axis by `theta2`, and finally a rotation
 about the X axis by `theta1`.
@@ -934,7 +934,7 @@ end
     RotZYX(theta1, theta2, theta3)
     RotZYX(roll=r, pitch=p, yaw=y)
 
-A 3×3 rotation matrix parameterized by the "Tait-Bryant" ZYX Euler angle
+A 3×3 rotation matrix parametrized by the "Tait-Bryant" ZYX Euler angle
 convention, consisting of first a rotation about the X axis by `theta3`,
 followed by a rotation about the Y axis by `theta2`, and finally a rotation
 about the Z axis by `theta1`.
@@ -992,7 +992,7 @@ end
     RotXZY(theta1, theta2, theta3)
     RotXZY(roll=r, pitch=p, yaw=y)
 
-A 3×3 rotation matrix parameterized by the "Tait-Bryant" XZY Euler angle
+A 3×3 rotation matrix parametrized by the "Tait-Bryant" XZY Euler angle
 convention, consisting of first a rotation about the Y axis by `theta3`,
 followed by a rotation about the Z axis by `theta2`, and finally a rotation
 about the X axis by `theta1`.
@@ -1050,7 +1050,7 @@ end
     RotYZX(theta1, theta2, theta3)
     RotYZX(roll=r, pitch=p, yaw=y)
 
-A 3×3 rotation matrix parameterized by the "Tait-Bryant" YZX Euler angle
+A 3×3 rotation matrix parametrized by the "Tait-Bryant" YZX Euler angle
 convention, consisting of first a rotation about the X axis by `theta3`,
 followed by a rotation about the Z axis by `theta2`, and finally a rotation
 about the Y axis by `theta1`.
@@ -1108,7 +1108,7 @@ end
     RotYXZ(theta1, theta2, theta3)
     RotYXZ(roll=r, pitch=p, yaw=y)
 
-A 3×3 rotation matrix parameterized by the "Tait-Bryant" YXZ Euler angle
+A 3×3 rotation matrix parametrized by the "Tait-Bryant" YXZ Euler angle
 convention, consisting of first a rotation about the Z axis by `theta3`,
 followed by a rotation about the X axis by `theta2`, and finally a rotation
 about the Y axis by `theta1`.
@@ -1166,7 +1166,7 @@ end
     RotZXY(theta1, theta2, theta3)
     RotZXY(roll=r, pitch=p, yaw=y)
 
-A 3×3 rotation matrix parameterized by the "Tait-Bryant" ZXY Euler angle
+A 3×3 rotation matrix parametrized by the "Tait-Bryant" ZXY Euler angle
 convention, consisting of first a rotation about the Y axis by `theta3`,
 followed by a rotation about the X axis by `theta2`, and finally a rotation
 about the Z axis by `theta1`.

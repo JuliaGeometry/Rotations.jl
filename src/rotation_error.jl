@@ -47,7 +47,7 @@ end
 function rotation_error(R1::Rotation, R2::Rotation, error_map::IdentityMap)
     err = params(R2\R1)
     if length(err) != 3
-        throw(ArgumentError("R2\\R1 must be a three-dimensional parameterization, got $(length(err))"))
+        throw(ArgumentError("R2\\R1 must be a three-dimensional parametrization, got $(length(err))"))
     end
     return RotationError(err, error_map)
 end

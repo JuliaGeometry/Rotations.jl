@@ -66,7 +66,7 @@ R(\bm{v})
 
 !!! note "Differentiation"
     If you're differentiating a Rodrigues Vector check the result is what you expect at theta = 0.
-    The first derivative of the rotation *should* behave, but higher-order derivatives of it (as well as parameterization conversions) should be tested.
+    The first derivative of the rotation *should* behave, but higher-order derivatives of it (as well as parametrization conversions) should be tested.
     The Stereographic Quaternion Projection (`MRP`) is the recommended three parameter format for differentiation.
 
 **example**

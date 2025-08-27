@@ -2,10 +2,10 @@
 """
     ErrorMap
 
-A nonlinear mapping between the space of unit quaternions and three-dimensional
+A non-linear mapping between the space of unit quaternions and three-dimensional
 rotation errors.
 
-These mappings are extremely useful for converting from globally nonsingular 3D rotation
+These mappings are extremely useful for converting from globally non-singular 3D rotation
 representations such as `QuatRotation` or `RotMatrix3` to a three-parameter error that can
 be efficiently used in gradient-based optimization methods that optimize deviations about
 a current iterate using first or second-order information.
@@ -38,7 +38,7 @@ struct IdentityMap <: ErrorMap end
 """
     InvErrorMap
 
-The nonlinear mapping from unit quaternions to a three-dimensional error state. Obtained by
+The non-linear mapping from unit quaternions to a three-dimensional error state. Obtained by
 inverting an `ErrorMap`, i.e.
 
     InvCayleyMap() = inv(CayleyMap())

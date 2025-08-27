@@ -9,21 +9,21 @@
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![DOI](https://zenodo.org/badge/53457088.svg)](https://zenodo.org/badge/latestdoi/53457088)
 
-This package implements various 3D rotation parameterizations and defines
-conversions between them. At their heart, each rotation parameterization *is*
+This package implements various 3D rotation parametrizations and defines
+conversions between them. At their heart, each rotation parametrization *is*
 a 3×3 unitary (orthogonal) matrix (based on the [StaticArrays.jl package](https://github.com/JuliaArrays/StaticArrays.jl)),
 and acts to rotate a 3-vector about the origin through matrix-vector multiplication.
 
 While the `RotMatrix` type is a dense representation of a `3×3` matrix, we also
 have sparse (or computed, rather) representations such as quaternions,
-angle-axis parameterizations, and Euler angles.
+angle-axis parametrizations, and Euler angles.
 
 For composing rotations about the origin with other transformations, see
 the [CoordinateTransformations.jl](https://github.com/JuliaGeometry/CoordinateTransformations.jl)
 package.
 
 ### Interface
-The following operations are supported by all of the implemented rotation parameterizations.
+The following operations are supported by all of the implemented rotation parametrizations.
 
 #### Composition
 Any two rotations of the same type can be composed with simple multiplication:
@@ -49,14 +49,14 @@ r = q\r2
 ```
 
 #### Rotation Angle / Axis
-The rotation angle and axis can be obtained for any rotation parameterization using
+The rotation angle and axis can be obtained for any rotation parametrization using
 ```julia
 rotation_axis(r::Rotation)
 rotation_angle(r::Rotation)
 ```
 
 #### Initialization
-All rotation types support `one(R)` to construct the identity rotation for the desired parameterization. A random rotation, uniformly sampled over the space of rotations, can be sampled using `rand(R)`. For example:
+All rotation types support `one(R)` to construct the identity rotation for the desired parametrization. A random rotation, uniformly sampled over the space of rotations, can be sampled using `rand(R)`. For example:
 ```julia
 r = one(QuatRotation)  # equivalent to QuatRotation(1.0, 0.0, 0.0, 0.0)
 q = rand(QuatRotation)
@@ -64,7 +64,7 @@ p = rand(MRP{Float32})
 ```
 
 #### Conversion
-All rotatations can be converted to another parameterization by simply calling the constructor for the desired parameterization. For example:
+All rotations can be converted to another parametrization by simply calling the constructor for the desired parametrization. For example:
 ```julia
 q = rand(QuatRotation)
 aa = AngleAxis(q)
@@ -103,7 +103,7 @@ q5 = q3 \ q2  # q5 = inv(q3) * q2
 # convert to a Modified Rodrigues Parameter (aka Stereographic quaternion projection, recommended for applications with differentiation)
 spq = MRP(r)
 
-# convert to the Angle-axis parameterization, or related Rotation vector
+# convert to the Angle-axis parametrization, or related Rotation vector
 aa = AngleAxis(r)
 rv = RotationVec(r)
 ϕ = rotation_angle(r)
@@ -116,7 +116,7 @@ r_xyz = RotXYZ(r)
 # Rotation about the X axis by 0.1 radians
 r_x = RotX(0.1)
 
-# Composing axis rotations together automatically results in Euler parameterization
+# Composing axis rotations together automatically results in Euler parametrization
 RotX(0.1) * RotY(0.2) * RotZ(0.3) === RotXYZ(0.1, 0.2, 0.3)
 
 # Can calculate Jacobian - derivatives of rotations with respect to parameters
@@ -126,7 +126,7 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
 # (MRP is ideal for optimization purposes - no constaints/singularities)
 ```
 
-### Rotation Parameterizations
+### Rotation Parametrizations
 
 1. **Rotation Matrix** `RotMatrix{N, T}`
 
@@ -149,7 +149,7 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
 
 3. **Quaternions** `QuatRotation{T}`
 
-    A 3D rotation parameterized by a unit quaternion. Note that the constructor
+    A 3D rotation parametrized by a unit quaternion. Note that the constructor
     will renormalize the quaternion to be a unit quaternion, and that although
     they follow the same multiplicative *algebra* as quaternions, it is better
     to think of `QuatRotation` as a 3×3 matrix rather than as a quaternion *number*.
@@ -163,7 +163,7 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
 
     Note: If you're differentiating a Rodrigues Vector check the result is what
     you expect at theta = 0.  The first derivative of the rotation *should*
-    behave, but higher-order derivatives of it (as well as parameterization
+    behave, but higher-order derivatives of it (as well as parametrization
     conversions) should be tested.  The Stereographic Quaternion Projection (`MRP`) is
     the recommended three parameter format for differentiation.
 
@@ -194,14 +194,14 @@ j2 = Rotations.jacobian(q, p) # How does the rotated point q*p change w.r.t. the
 10. **Euler Angles - Three-axis rotations** `RotXYZ{T}`, `RotXYX{T}`, etc
 
     A composition of 3 cardinal axis rotations is typically known as a Euler
-    angle parameterization of a 3D rotation. The rotations with 3 unique axes,
+    angle parametrization of a 3D rotation. The rotations with 3 unique axes,
     such as `RotXYZ`, are said to follow the [**Tait Bryan**](https://en.wikipedia.org/wiki/Euler_angles#Tait.E2.80.93Bryan_angles) angle ordering,
     while those which repeat (e.g. `EulerXYX`) are said to use [**Proper Euler**](https://en.wikipedia.org/wiki/Euler_angles#Conventions) angle ordering.
 
     Like the two-angle versions, the order of application to a vector is right-to-left, so that `RotXYZ(x, y, z) * v == RotX(x) * (RotY(y) * (RotZ(z) * v))`.  This may be interpreted as an "extrinsic" rotation about the Z, Y, and X axes or as an "intrinsic" rotation about the X, Y, and Z axes.  Similarly, `RotZYX(z, y, x)` may be interpreted as an "extrinsic" rotation about the X, Y, and Z axes or an "intrinsic" rotation about the Z, Y, and X axes.
 
 ### The Rotation Error state and Linearization
-It is often convenient to consider perturbations or errors about a particular 3D rotation, such as applications in state estimation or optimization-based control. Intuitively, we expect these errors to live in three-dimensional space. For globally non-singular parameterizations such as unit quaternions, we need a way to map between the four parameters of the quaternion to this three-dimensional plane tangent to the four-dimensional hypersphere on which quaternions live.
+It is often convenient to consider perturbations or errors about a particular 3D rotation, such as applications in state estimation or optimization-based control. Intuitively, we expect these errors to live in three-dimensional space. For globally non-singular parametrizations such as unit quaternions, we need a way to map between the four parameters of the quaternion to this three-dimensional plane tangent to the four-dimensional hypersphere on which quaternions live.
 
 There are several of these maps provided by Rotations.jl:
 * `ExponentialMap`: A very common mapping that uses the quaternion
@@ -210,7 +210,7 @@ converts a 3D rotation vector (i.e. axis-angle vector) to a unit quaternion.
 It tends to be the most computationally expensive mapping.
 
 * `CayleyMap`: Represents the differential quaternion using Rodrigues
-parameters. This parameterization goes singular at 180° but does not
+parameters. This parametrization goes singular at 180° but does not
 inherit the sign ambiguities of the unit quaternion. It offers an
 excellent combination of cheap computation and good behavior.
 
@@ -221,7 +221,7 @@ differential unit quaternion. This mapping goes singular at 360°.
 differential unit quaternion. This mapping also goes singular at 180° but is
 the computationally cheapest map and often performs well.
 
-Rotations.jl provides the `RotationError` type for representing rotation errors, that act just like a `SVector{3}` but carry the nonlinear map used to compute the error, which can also be used to convert the error back to a `QuatRotation` (and, by extention, any other 3D rotation parameterization). The following methods are useful for computing `RotationError`s and adding them back to the nominal rotation:
+Rotations.jl provides the `RotationError` type for representing rotation errors, that act just like a `SVector{3}` but carry the non-linear map used to compute the error, which can also be used to convert the error back to a `QuatRotation` (and, by extension, any other 3D rotation parametrization). The following methods are useful for computing `RotationError`s and adding them back to the nominal rotation:
 ```julia
 rotation_error(R1::Rotation, R2::Rotation, error_map::ErrorMap)  # compute the error between `R1` and `R2` using `error_map`
 add_error(R::Rotation, err::RotationError)  # "adds" the error to `R` by converting back a `UnitQuaterion` and composing with `R`
@@ -246,7 +246,7 @@ respect to the infinitesimal rotation. For unit quaternions, this is a 4x3 matri
 
 ### Import / Export
 
-All parameterizations can be converted to and from (mutable or immutable)
+All parametrizations can be converted to and from (mutable or immutable)
 3×3 matrices, e.g.
 
 ```julia
