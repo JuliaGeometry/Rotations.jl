@@ -10,9 +10,11 @@ RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [weakdeps]
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [extensions]
+RotationsMakieExt = "Makie"
 RotationsRecipesBaseExt = "RecipesBase"
 
 [compat]
@@ -21,6 +23,7 @@ BenchmarkTools = "1"
 ForwardDiff = "0.10"
 InteractiveUtils = "1"
 LinearAlgebra = "1"
+Makie = "0.24"
 Plots = "1"
 Quaternions = "0.5.3, 0.6, 0.7"
 Random = "1"
