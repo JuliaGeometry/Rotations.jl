@@ -24,8 +24,8 @@ ith_partial{N}(X::SMatrix{9,N}, i) = @SMatrix([X[1,i]   X[4,i]   X[7,i];
 
 """
     jacobian(::Type{output_param}, R::input_param)
-Returns the jacobian for transforming from the input rotation parameterization
-to the output parameterization, centered at the value of R.
+Returns the Jacobian for transforming from the input rotation parametrization
+to the output parametrization, centered at the value of R.
 
     jacobian(R::rotation_type, X::AbstractVector)
 Returns the jacobian for rotating the vector X by R.
@@ -221,11 +221,11 @@ end
 #
 """
 1) hessian(::Type{output_param}, R::input_param)
-Returns the 2nd order partial derivatives for transforming from the input rotation parameterization to the output parameterization, centered at the value of R.
-The output is an N vector of DxD matrices, where N and D are the number of parameters in the output and input parameterizations respectively.
+Returns the 2nd order partial derivatives for transforming from the input rotation parametrization to the output parametrization, centered at the value of R.
+The output is an N vector of DxD matrices, where N and D are the number of parameters in the output and input parametrizations respectively.
 2) hessian(R::rotation_type, X::AbstractVector)
 Returns the 2nd order partial derivatives for rotating the vector X by R.
-The output is an 3 vector of DxD matrices, where D is the number of parameters of the rotation parameterization.
+The output is an 3 vector of DxD matrices, where D is the number of parameters of the rotation parametrization.
 """
 function hessian(::Type{Quaternion},  X::SpQuat)
 

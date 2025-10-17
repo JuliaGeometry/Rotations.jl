@@ -4,10 +4,10 @@
     struct AngleAxis{T} <: Rotation{3,T}
     AngleAxis(Θ, x, y, z)
 
-A 3×3 rotation matrix parameterized by a 3D rotation by angle θ about an
+A 3×3 rotation matrix parametrized by a 3D rotation by angle θ about an
 arbitrary axis `[x, y, z]`.
 
-Note that the axis is not unique for θ = 0, and that this parameterization does
+Note that the axis is not unique for θ = 0, and that this parametrization does
 not continuously map the neighbourhood of the identity rotation (and therefore
 might not be suitable for autodifferentation and optimization purposes).
 
@@ -99,7 +99,7 @@ end
     return AA(r.theta, 0, 0, 1)
 end
 
-# Using Rodrigues formula on an AngleAxis parameterization (assume unit axis length) to do the rotation
+# Using Rodrigues formula on an AngleAxis parametrization (assume unit axis length) to do the rotation
 # (implementation from: https://ceres-solver.googlesource.com/ceres-solver/+/1.10.0/include/ceres/rotation.h)
 function Base.:*(aa::AngleAxis, v::StaticVector)
     if length(v) != 3
@@ -141,7 +141,7 @@ end
     struct RotationVec{T} <: Rotation{3,T}
     RotationVec(sx, sy, sz)
 
-Rodrigues vector parameterization of a 3×3 rotation matrix. The direction of the
+Rodrigues vector parametrization of a 3×3 rotation matrix. The direction of the
 vector [sx, sy, sz] defines the axis of rotation, and the rotation angle is
 given by its norm.
 """

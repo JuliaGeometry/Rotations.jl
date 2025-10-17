@@ -1,7 +1,7 @@
 """
     MRP{T} <: Rotation
 
-Modified Rodrigues Parameter. Is a 3D parameterization of attitude, and is a sterographic
+Modified Rodrigues Parameter. Is a 3D parametrization of attitude, and is a stereographic
 projection of the 4D unit sphere onto the plane tangent to the negative real pole. They
 have a singularity at θ = ±360°.
 

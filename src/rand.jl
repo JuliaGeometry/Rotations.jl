@@ -10,7 +10,7 @@ function Random.rand(rng::AbstractRNG, ::Random.SamplerType{R}) where R <: Union
 end
 
 # A random rotation can be obtained easily with unit quaternions
-# The unit sphere in R⁴ parameterizes quaternion rotations according to the
+# The unit sphere in R⁴ parametrizes quaternion rotations according to the
 # Haar measure of SO(3) - see e.g. http://math.stackexchange.com/questions/184086/uniform-distributions-on-the-space-of-rotations-in-3d
 function Random.rand(rng::AbstractRNG, ::Random.SamplerType{R}) where R <: Union{<:Rotation{3},<:RotMatrix{3}}
     # We use the awkward Union{<:Rotation{3},<:RotMatrix{3}} here rather than `Rotation{3}`

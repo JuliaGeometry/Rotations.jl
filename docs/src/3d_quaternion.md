@@ -5,7 +5,7 @@ using Rotations
 ```
 
 ## `QuatRotation`
-A 3D rotation parameterized by a unit [quaternion](https://en.wikipedia.org/wiki/Quaternion) ([versor](https://en.wikipedia.org/wiki/Versor)).
+A 3D rotation parametrized by a unit [quaternion](https://en.wikipedia.org/wiki/Quaternion) ([versor](https://en.wikipedia.org/wiki/Versor)).
 Note that the constructor will renormalize the quaternion to be a unit quaternion, and that although they follow the same multiplicative *algebra* as quaternions, it is better to think of `QuatRotation` as a ``3 \times 3`` matrix rather than as a quaternion *number*.
 
 ```math
