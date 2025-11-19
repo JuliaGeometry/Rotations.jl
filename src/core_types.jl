@@ -235,7 +235,7 @@ See [Wahba's problem](https://en.wikipedia.org/wiki/Wahba%27s_problem) for more 
 function nearest_rotation(M::StaticMatrix{N,N}) where N
     u, _, v = svd(M)
     s = sign(det(u * v'))
-    d = @SVector ones(N-1)
+    d = @SVector ones(eltype(M), N-1)
     R = u * Diagonal(push(d,s)) * v'
     return RotMatrix{N}(R)
 end
