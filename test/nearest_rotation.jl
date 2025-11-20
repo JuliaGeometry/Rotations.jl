@@ -32,4 +32,11 @@
             @test all(sort(eigvals(Symmetric(V)))[2:end] .≥ 0)
         end
     end
+    @testset "return eltype" begin
+        for T in (Float16, Float32, Float64)
+            M = @SMatrix randn(T, 3, 3)
+            R = nearest_rotation(M)
+            @test eltype(M) == eltype(R)
+        end
+    end
 end
