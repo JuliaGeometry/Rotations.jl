@@ -18,7 +18,7 @@ RotationsRecipesBaseExt = "RecipesBase"
 [compat]
 Aqua = "0.8"
 BenchmarkTools = "1"
-ForwardDiff = "0.10"
+ForwardDiff = "0.10, 1"
 InteractiveUtils = "1"
 LinearAlgebra = "1"
 Plots = "1"
