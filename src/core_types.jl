@@ -32,12 +32,6 @@ rotation_axis(r::Rotation{3}) = rotation_axis(AngleAxis(r))
 Base.convert(::Type{R}, rot::R) where {N,R<:Rotation{N}} = rot
 Base.convert(::Type{R}, rot::Rotation{N}) where {N,R<:Rotation{N}} = R(rot)
 
-# Rotation matrices should be orthoginal/unitary. Only the operations we define,
-# like multiplication, will stay as Rotations, otherwise users will get an
-# SMatrix{3,3} (e.g. rot1 + rot2 -> SMatrix)
-Base.@pure StaticArrays.similar_type(::Union{R,Type{R}}) where {R <: Rotation} = SMatrix{size(R)..., eltype(R), prod(size(R))}
-Base.@pure StaticArrays.similar_type(::Union{R,Type{R}}, ::Type{T}) where {R <: Rotation, T} = SMatrix{size(R)..., T, prod(size(R))}
-
 @inline function Base.:/(r1::Rotation, r2::Rotation)
     r1 * inv(r2)
 end

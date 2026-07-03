@@ -30,12 +30,6 @@ Base.:-(r1::RotationGenerator, r2::RotationGenerator) = r1 + (-r2)
 # `convert` goes through the constructors, similar to e.g. `Number`
 Base.convert(::Type{R}, rot::RotationGenerator{N}) where {N,R<:RotationGenerator{N}} = R(rot)
 
-# RotationGenerator matrices should be skew-symmetric. Only the operations we define,
-# like addition, will stay as RotationGenerators, otherwise users will get an
-# SMatrix{3,3} (e.g. rot1 * rot2 -> SMatrix)
-Base.@pure StaticArrays.similar_type(::Union{R,Type{R}}) where {R <: RotationGenerator} = SMatrix{size(R)..., eltype(R), prod(size(R))}
-Base.@pure StaticArrays.similar_type(::Union{R,Type{R}}, ::Type{T}) where {R <: RotationGenerator, T} = SMatrix{size(R)..., T, prod(size(R))}
-
 ################################################################################
 ################################################################################
 """
