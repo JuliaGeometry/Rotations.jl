@@ -28,6 +28,7 @@ include("eigen.jl")
 include("rand.jl")
 include("rotation_between.jl")
 include("deprecated.jl")
+include("extensions.jl")
 
 export
     # Rotation types

@@ -1,10 +1,12 @@
 using Rotations
 using Documenter
+using Makie
 
 DocMeta.setdocmeta!(Rotations, :DocTestSetup, :(using Rotations); recursive=true)
 
+RotationsMakieExt = Base.get_extension(Rotations, :RotationsMakieExt)
 makedocs(;
-    modules=[Rotations],
+    modules=[Rotations, RotationsMakieExt],
     repo="https://github.com/JuliaGeometry/Rotations.jl/blob/{commit}{path}#{line}",
     sitename="Rotations.jl",
     format=Documenter.HTML(;
