@@ -24,8 +24,12 @@ fig, ax, plt = plot(rot2d)
 ```
 
 ```@docs
-Ext.rotation2plot
+RotationsMakieExt.rotation2plot
+RotationsMakieExt.rotation2plot!
+RotationsMakieExt.Rotation2Plot
 ```
+
+The functions are also accessible from the `Visualization` module of the package.
 
 ### Basic 3D Rotation Plotting
 
@@ -38,7 +42,9 @@ fig, ax, plt = plot(rot3d)
 ```
 
 ```@docs
-Ext.rotation3plot
+RotationsMakieExt.rotation3plot
+RotationsMakieExt.rotation3plot!
+RotationsMakieExt.Rotation3Plot
 ```
 
 ### Combining Multiple Rotations
