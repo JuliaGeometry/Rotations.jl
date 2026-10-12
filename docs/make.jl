@@ -4,8 +4,9 @@ using Makie
 
 DocMeta.setdocmeta!(Rotations, :DocTestSetup, :(using Rotations); recursive=true)
 
+RotationsMakieExt = Base.get_extension(Rotations, :RotationsMakieExt)
 makedocs(;
-    modules=[Rotations, Base.get_extension(Rotations, :RotationsMakieExt)],
+    modules=[Rotations, RotationsMakieExt],
     repo="https://github.com/JuliaGeometry/Rotations.jl/blob/{commit}{path}#{line}",
     sitename="Rotations.jl",
     format=Documenter.HTML(;
